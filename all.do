@@ -1,0 +1,1 @@
+redo bin/serenity.fcgi

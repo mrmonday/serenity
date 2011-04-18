@@ -1,0 +1,12 @@
+<IfModule fastcgi_module>
+  AddHandler fastcgi-script .fcgi
+</IfModule>
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteCond %{SCRIPT_FILENAME} !-d
+	RewriteCond %{SCRIPT_FILENAME} !-f
+	RewriteRule ^(.*)$ serenity.fcgi/$1 [QSA]
+</IfModule>
+<IfModule dir_module>
+    DirectoryIndex serenity.fcgi
+</IfModule>

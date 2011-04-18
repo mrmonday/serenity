@@ -1,0 +1,13 @@
+controllers.d
+layouts.d
+*.fcgi
+*.swp
+*.swo
+*.o
+*.a
+*.db
+*.tmp
+*.tmp2
+.redo/*
+.do_built
+.do_built.dir/*
