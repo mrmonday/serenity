@@ -9,7 +9,6 @@
  */
 module serenity.HtmlPrinter;
 
-//import serenity.DocumentPrinter;
 import serenity.Html5Printer;
 
 class HtmlPrinter : Html5Printer

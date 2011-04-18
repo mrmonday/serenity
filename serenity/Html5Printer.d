@@ -10,7 +10,6 @@
 module serenity.Html5Printer;
 
 package import serenity.HtmlDocument;
-import serenity.DocumentPrinter;
 
 import std.algorithm;
 
@@ -22,7 +21,7 @@ static this()
     noClosingTag = [ "input", "meta" ];
 }
 
-class Html5Printer //: DocumentPrinter
+class Html5Printer
 {
     void print(HtmlDocument doc, void delegate(string[]...) dg)
     {
