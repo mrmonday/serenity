@@ -23,7 +23,7 @@ class Default : Layout
         mDoc = new HtmlDocument;
     }
 
-    public HtmlDocument layout(Controller main, Document content)
+    override public HtmlDocument layout(Controller main, Document content)
     {
         assert(cast(HtmlDocument)content !is null);
         auto doc = new HtmlDocument;

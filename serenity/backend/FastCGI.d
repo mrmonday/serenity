@@ -27,12 +27,12 @@ final class FastCGIInputStream : WhiteHole!InputStream
         mStream = stream;
     }
 
-    void read(out char ch)
+    override void read(out char ch)
     {
         ch = cast(char)FCGX_GetChar(mStream);
     }
 
-    bool eof()
+    override bool eof()
     {
         return FCGX_HasSeenEOF(mStream) == -1;
     }
@@ -47,13 +47,13 @@ final class FastCGIOutputStream : WhiteHole!OutputStream
     }
 
     // TODO: Should throw on error
-    void write(const(char)[] str)
+    override void write(const(char)[] str)
     {
         FCGX_PutStr(str.ptr, str.length, mStream);
     }
 
     // TODO: Should throw on error
-    void writeLine(const(char)[] str)
+    override void writeLine(const(char)[] str)
     {
         FCGX_PutStr((str ~ "\r\n").ptr, str.length + 2, mStream);
     }

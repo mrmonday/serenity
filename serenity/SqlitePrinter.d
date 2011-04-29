@@ -13,7 +13,7 @@ public import serenity.SqlPrinter;
 
 class SqlitePrinter : SqlPrinter
 {
-    void print(SqlQuery doc, void delegate(string[]...) dg)
+    override void print(SqlQuery doc, void delegate(string[]...) dg)
     {
         switch (doc.getType())
         {
@@ -80,7 +80,6 @@ class SqlitePrinter : SqlPrinter
                                 break;
                             default:
                                 throw new SqlPrinterException("Unsupported function for SQLite");
-                                break;
                         }
                     }
                     else
@@ -179,7 +178,6 @@ class SqlitePrinter : SqlPrinter
                 break;
             default:
                 assert(false, "Query type unimplemented for SQLite");
-                break;
         }
     }
 

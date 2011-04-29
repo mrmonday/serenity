@@ -38,12 +38,12 @@ class SqliteDatabase : Database
         }
     }
 
-    public void finalize_()
+    override public void finalize_()
     {
         sqlite3_close(mDb);
     }
 
-    protected SqlPrinter getPrinter()
+    override protected SqlPrinter getPrinter()
     {
         return new SqlitePrinter;
     }

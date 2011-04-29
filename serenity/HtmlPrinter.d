@@ -13,7 +13,7 @@ import serenity.Html5Printer;
 
 class HtmlPrinter : Html5Printer
 {
-    void print(HtmlDocument doc, void delegate(string[]...) dg)
+    override void print(HtmlDocument doc, void delegate(string[]...) dg)
     {
         // TODO * Wrap HTML5 elements in <div>'s
         //      * <meta charset=""> to <meta http-equiv="Content-type"...>
