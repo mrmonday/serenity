@@ -20,45 +20,6 @@ version(EnableSqliteDb)
 
 mixin SerenityException!("Database");
 
-class Result(T)
-{
-    private T[] mResults;
-
-    void opCatAssign(T value)
-    {
-        mResults ~= value;
-    }
-
-    int opApply(int delegate(ref T) dg)
-    {
-        foreach (result; mResults)
-        {
-            if (auto result = dg(result))
-            {
-                return result;
-            }
-        }
-        return 0;
-    }
-
-    int opApply(int delegate(ref size_t, ref T) dg)
-    {
-        foreach (i, result; mResults)
-        {
-            if (auto result = dg(i, result))
-            {
-                return result;
-            }
-        }
-        return 0;
-    }
-
-    size_t length()
-    {
-        return mResults.length;
-    }
-}
-
 abstract class Database
 {
     private static Database[] mDatabases;
@@ -95,7 +56,7 @@ abstract class Database
         }
     }
 
-    public static Result!(T) execute(T)(SqlQuery query)
+    public static T[] execute(T)(SqlQuery query)
     {
         static string dbExec(string[] names...)
         {

@@ -32,7 +32,7 @@ class Home : Model
         }
     }
 
-    Result!(Post) getPosts(long lim, long offs=0)
+    auto getPosts(long lim, long offs=0)
     {
         with (new SqlQuery)
         {

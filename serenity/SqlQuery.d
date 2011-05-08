@@ -518,17 +518,6 @@ class SqlQuery
     }
 
     /**
-     * Execute a SQL query in a worker thread
-     *
-     * Returns:
-     *  The result of the query
-     */
-    public Result!(T) bgExecute(T)()
-    {
-        return execute!(T)(true);
-    }
-
-    /**
      * Execute a SQL query
      *
      * Params:
@@ -536,7 +525,7 @@ class SqlQuery
      * Returns:
      *  The result of the query
      */
-    public Result!(T) execute(T)()
+    public T[] execute(T)()
     {
         if (mQt == QueryType.Select && mColumns.length == 1 && mColumns[0] == "*")
         {
@@ -546,6 +535,6 @@ class SqlQuery
                 mColumns ~= T.tupleof[i].stringof[T.stringof.length+3..$] ;
             }
         }
-        return Database.execute!(T)(this);
+        return Database.execute!T(this);
     }
 }

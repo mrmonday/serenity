@@ -11,7 +11,6 @@ module serenity.Model;
 
 import serenity.Log;
 
-public import serenity.Database : Result;
 public import serenity.SqlQuery;
 
 abstract class Model

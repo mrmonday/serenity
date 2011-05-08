@@ -56,9 +56,9 @@ class SqliteDatabase : Database
      *  params  = A list of parameters to bind
      *  columns = The names of the columns being operated on
      */
-    public Result!(T) execute(T)(string query, Bind[] params, string[] columns)
+    public T[] execute(T)(string query, Bind[] params, string[] columns)
     {
-        auto result = new Result!T;
+        T[] result;
         sqlite3_stmt* statement;
         // TODO Deal with tail
         char* tail;
