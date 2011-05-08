@@ -11,10 +11,10 @@ module example.controllers.Error;
 
 import serenity.Controller;
 
-
 class Error : Controller
 {
-mixin registerController!(Error);
+    mixin registerController!Error;
+
     HtmlDocument viewDefault(Request request, string[] args)
     {
         setTitle("Error");

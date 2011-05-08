@@ -10,6 +10,7 @@
 module serenity.Log;
 
 import std.stream;
+import std.string;
 
 class Logger
 {
@@ -18,13 +19,13 @@ class Logger
     {
         mName = name;
     }
-    bool info() 
+    bool info(T=void)()
     {
         return true;
     }
-    void info(string msg, ...)
+    void info(T...)(string msg, T args)
     {
-        Log.mStream.writeLine("[info] [" ~ mName ~ "]: " ~ msg);
+        Log.mStream.writeLine(format("[info] [%s]: " ~ msg, mName, args));
     }
     bool error() { return true; }
     void error(string,...) {}

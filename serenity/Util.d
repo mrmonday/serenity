@@ -53,10 +53,10 @@ abstract class SerenityBaseException : Exception
      *  msg = Exception message
      *  code = HTTP status code to use when uncaught
      */
-    this(string msg, ushort code=500)
+    this(string msg, ushort code=500, string file="", size_t line=0)
     {
         mCode = code;
-        super(msg);
+        super(msg, file, line);
     }
 
     /**
@@ -72,14 +72,14 @@ abstract class SerenityBaseException : Exception
 }
 
 /// Create an exception class with the given name ~ "Exception"
-template SerenityException(string name, string code="500")
+mixin template SerenityException(string name, string code="500", string file=__FILE__, size_t line=__LINE__)
 {
     mixin(`class ` ~ name ~ `Exception : SerenityBaseException
            {
                /// code is used to set the HTTP status code when uncaught
                this(string msg, ushort code=` ~ code ~ `)
                {
-                   super(msg, code);
+                   super(msg, code, "` ~ file ~ `", ` ~ line.stringof ~ `);
                }
            }`);
 }

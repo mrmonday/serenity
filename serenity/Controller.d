@@ -86,7 +86,7 @@ mixin template registerController(T : Controller)
  */
 mixin template registerController(T : Controller, M : Model)
 {
-    mixin registerController!(T);
+    mixin registerController!T;
     private static M _model;
     static this()
     {
@@ -381,7 +381,7 @@ abstract class Controller
         {
             if (name == mViewMethod)
             {
-                if (log.info) log.info("Calling method HtmlDocument {}(Request, string[]) @ {:x#}", mViewMethod, ptr);
+                if (log.info) log.info("Calling method HtmlDocument %s(Request, string[]) @ %#x", mViewMethod, ptr);
                 Document delegate(Request, string[]) dg;
                 dg.ptr = cast(void*)this;
                 dg.funcptr = cast(typeof(dg.funcptr))ptr;
