@@ -1,6 +1,6 @@
 [[ -z $DC ]] && DC='dmd'
 [[ -z $DEBUG ]] && DEBUG=1
-ARGS="-L-lsqlite3 -L-lfcgi -version=EnableSqliteDb -version=EnableFastCGIBackend"
+ARGS="-L-lsqlite3 -L-lfcgi -version=EnableSqlitePersister -version=EnableFastCGIBackend"
 (( $DEBUG == 0 )) && ARGS="-O -inline $ARGS"
 (( $DEBUG == 1 )) && ARGS="-g -debug -unittest $ARGS"
 if [[ $DC = 'gdmd' ]]; then

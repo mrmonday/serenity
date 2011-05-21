@@ -12,10 +12,10 @@ module serenity.SqlQuery;
 import serenity.Database;
 import serenity.Util;
 
-public import std.datetime : DateTime;
+//public import std.datetime;
 import std.conv;
 
-enum : uint
+/*enum : uint
 {
     None = 0,
     NotNull = 1,
@@ -27,7 +27,8 @@ enum : uint
     AutoIncrement = 64
 }
 
-alias uint Constraint;
+alias uint Constraint;*/
+import serenity.Persister;// : Constraint;
 
 enum Type
 {

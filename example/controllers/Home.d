@@ -11,22 +11,37 @@ module example.controllers.Home;
 
 import serenity.Controller;
 
-import example.models.Home : Model = Home;
+struct Post
+{
+    enum constrain_id = PrimaryKey | AutoIncrement;
+    ulong id;
+    DateTime time;
+    string title;
+    string content;
+}
 
 class Home : Controller
 {
-    mixin registerController!(Home, Model);
-    
+    mixin registerController!(Home);
+    Persister!Post posts;
+
+    this()
+    {
+        posts = new Persister!Post;
+        posts.initialize();
+    }
+
     HtmlDocument viewDefault(Request, string[] args)
     {
         setTitle("Home controller");
 
         auto doc = new HtmlDocument;
-        foreach (post; model.getPosts(10))
+        foreach (post; posts[$..-10])
         {
+            log.info("adding article");
             auto article = doc.article(true);
             article.h2.a.attr("href", "/example/view"/*makeUrl("view", post.id)*/).content = post.title;
-            article.time.content = post.time.toISOExtendedString();
+            article.time.content = post.time.toSimpleString();
             article.p.content = post.content;
         }
         return doc;
@@ -42,9 +57,9 @@ class Home : Controller
         form.submit(null, null, "Add post");
         if (form.validate())
         {
-            model.createPost(request.post.get("title"), request.post.get("content"));
+            posts ~= Post(0, cast(DateTime)Clock.currTime().toUTC(), request.post.get("title"), request.post.get("content"));
             setResponseCode(303);
-            setHeader("Location", "/serenity/");
+            setHeader("Location", "/~robert/serenity/");
         }
         return form;
     }

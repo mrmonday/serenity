@@ -8,7 +8,7 @@
  * License: New BSD License, see COPYING
  */
 module example.models.Home;
-
+version(none):
 import serenity.Model;
 
 struct Post

@@ -155,18 +155,18 @@ class SqlitePrinter : SqlPrinter
                                }
                            }
                            // TODO
-                           if (field.constraints & ForeignKey)
+                           /*if (field.constraints & ForeignKey)
                            {
                                assert(0);
-                           }
+                           }*/
                            if (field.constraints & Check)
                            {
                                assert(0);
                            }
-                           if (field.constraints & Default)
+                          /* if (field.constraints & Default)
                            {
                                assert(0);
-                           }
+                           }*/
                        }
                        if (i != fields.length - 1)
                        {

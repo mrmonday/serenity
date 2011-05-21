@@ -11,6 +11,7 @@ module bootstrap;
 
 import serenity.Serenity;
 import serenity.database.Sqlite;
+import serenity.persister.Sqlite;
 
 import controllers;
 import layouts;
@@ -22,9 +23,7 @@ int main(string[] args)
     Log.level = Log.Level.Trace;
 
     /// Create a new SQLite Database using the given file
-    auto db = new SqliteDatabase("serenity-test.db");
-    scope(exit) Database.finalize();
-    Database.addDatabase(db);
+    setDefaultDatabase(new SqliteDatabase("serenity-test.db"));
 
     /// Set up routing
     Router.addRoutes([

@@ -133,7 +133,7 @@ static class Log
      */
     debug static void error(T...)(string message, T params)
     {
-        mStream.writeLine(message);
+        mStream.writeLine(format("[debug]: " ~ message, params));
         //TangoLog.lookup("serenity.debug").error(message, params);
     }
 

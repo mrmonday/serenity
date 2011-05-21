@@ -30,11 +30,12 @@ class SqliteDatabase : Database
         check(sqlite3_open(toStringz(dbName), &mDb));
     }
 
-    private void check(int errCode)
+    private void check(string file=__FILE__, size_t line=__LINE__)(int errCode)
     {
         if (errCode != SQLITE_OK)
         {
-            throw new DatabaseException("SQLite error: " ~ to!string(sqlite3_errmsg(mDb)));
+            //asm { int 3; }
+            throw new DatabaseException(file ~ ':' ~ to!string(line) ~ " SQLite error: " ~ to!string(sqlite3_errmsg(mDb)));
         }
     }
 
@@ -47,6 +48,33 @@ class SqliteDatabase : Database
     {
         return new SqlitePrinter;
     }
+    
+    public T[] execute(T, U...)(string query, U params)
+    {
+        Bind[] binds;
+        foreach (i, param; U)
+        {
+            Bind b;
+            b.type = TypeMap!param;
+            foreach (j, v; typeof(Bind.tupleof[1..$]))
+            {
+                static if (is(v == param))
+                {
+                    b.tupleof[j+1] = params[i];
+                    break;
+                }
+            }
+            binds ~= b;
+            //mixin(`b.` ~ param.stringof ~ `Val`);
+           // binds ~= Bind(TypeMap!(param), params[i]);
+        }
+        return execute!T(query, binds);
+    }
+    
+    public T[] execute(T, U)(string query, U[] columns...) if (is(U == string))
+    {
+        return execute!T(query, null, columns);
+    }
 
     /**
      * Execute a SQL query
@@ -56,7 +84,7 @@ class SqliteDatabase : Database
      *  params  = A list of parameters to bind
      *  columns = The names of the columns being operated on
      */
-    public T[] execute(T)(string query, Bind[] params, string[] columns)
+    public T[] execute(T)(string query, Bind[] params=null, string[] columns=null)
     {
         T[] result;
         sqlite3_stmt* statement;
@@ -71,43 +99,44 @@ class SqliteDatabase : Database
                 switch (param.type)
                 {
                    case Type.Bool:
-                        sqlite3_bind_int(statement, i, param.boolVal);
+                        check(sqlite3_bind_int(statement, i + 1, param.boolVal));
                         break;
                    case Type.Byte:
-                        sqlite3_bind_int(statement, i, param.byteVal);
+                        check(sqlite3_bind_int(statement, i + 1, param.byteVal));
                         break;
                    case Type.Ubyte:
-                        sqlite3_bind_int(statement, i, param.ubyteVal);
+                        check(sqlite3_bind_int(statement, i + 1, param.ubyteVal));
                         break;
                    case Type.Short:
-                        sqlite3_bind_int(statement, i, param.shortVal);
+                        check(sqlite3_bind_int(statement, i + 1, param.shortVal));
                         break;
                    case Type.Ushort:
-                        sqlite3_bind_int(statement, i, param.ushortVal);
+                        check(sqlite3_bind_int(statement, i + 1, param.ushortVal));
                         break;
                    case Type.Int:
-                        sqlite3_bind_int(statement, i, param.intVal);
+                        //Log.error("%s : %s %s", query, i + 1, param.intVal);
+                        check(sqlite3_bind_int(statement, i + 1, param.intVal));
                         break;
                    case Type.Uint:
-                        sqlite3_bind_int(statement, i, param.uintVal);
+                        check(sqlite3_bind_int(statement, i + 1, param.uintVal));
                         break;
                    case Type.Long:
-                        sqlite3_bind_int64(statement, i, param.longVal);
+                        check(sqlite3_bind_int64(statement, i + 1, param.longVal));
                         break;
                    case Type.Ulong:
-                        sqlite3_bind_int64(statement, i, param.ulongVal);
+                        check(sqlite3_bind_int64(statement, i + 1, param.ulongVal));
                         break;
                    case Type.Float:
-                       sqlite3_bind_double(statement, i, param.floatVal);
+                       check(sqlite3_bind_double(statement, i + 1, param.floatVal));
                        break;
                    case Type.Double:
-                       sqlite3_bind_double(statement, i, param.doubleVal);
+                       check(sqlite3_bind_double(statement, i + 1, param.doubleVal));
                        break;
                    case Type.Time:
-                       sqlite3_bind_text(statement, i, toStringz(param.timeVal.toISOExtendedString()), -1, null);
+                       check(sqlite3_bind_text(statement, i + 1, toStringz(param.timeVal.toISOExtendedString()), -1, null));
                        break;
                    case Type.String:
-                       sqlite3_bind_text(statement, i, toStringz(param.stringVal), -1, null);
+                       check(sqlite3_bind_text(statement, i + 1, toStringz(param.stringVal), -1, null));
                        break;
                    case Type.Wstring:
                        if (param.wstringVal)
@@ -115,10 +144,10 @@ class SqliteDatabase : Database
                            if (param.wstringVal[$-1] != '\0')
                                param.wstringVal ~= '\0';
                        }
-                       sqlite3_bind_text16(statement, i, param.wstringVal.ptr, -1, null);;
+                       check(sqlite3_bind_text16(statement, i + 1, param.wstringVal.ptr, -1, null));
                        break;
                    case Type.UbyteArr:
-                       sqlite3_bind_blob(statement, i, param.ubyteArrVal.ptr, param.ubyteArrVal.length, null);
+                       check(sqlite3_bind_blob(statement, i + 1, param.ubyteArrVal.ptr, param.ubyteArrVal.length, null));
                        break;
                    default:
                        throw new DatabaseException( "SQLite error: Unsupported datatype to bind" );
@@ -132,6 +161,14 @@ class SqliteDatabase : Database
             {
                 T val;
                 size_t col = 0;
+                if (columns is null)
+                {
+                    columns = new string[T.tupleof.length];
+                    foreach (i, type; typeof(T.tupleof))
+                    {
+                        columns[i] = T.tupleof[i].stringof[T.stringof.length+3..$];
+                    }
+                }
                 foreach (i, type; typeof(T.tupleof))
                 {
                     if (T.tupleof[i].stringof[T.stringof.length+3..$] == columns[col])

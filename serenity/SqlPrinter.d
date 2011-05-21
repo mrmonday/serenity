@@ -9,6 +9,7 @@
  */
 module serenity.SqlPrinter;
 
+package import serenity.Persister;
 package import serenity.SqlQuery;
 import serenity.Util;
 

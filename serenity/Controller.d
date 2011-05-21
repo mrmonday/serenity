@@ -15,6 +15,7 @@ import serenity.Model;
 import serenity.Util;
 
 public import serenity.HtmlDocument;
+public import serenity.Persister;
 public import serenity.Request;
 
 import std.string;
