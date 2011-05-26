@@ -13,7 +13,6 @@ import serenity.Controller;
 
 struct Post
 {
-    enum constrain_id = PrimaryKey | AutoIncrement;
     ulong id;
     DateTime time;
     string title;

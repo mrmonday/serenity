@@ -30,6 +30,7 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
     /// TypeTuple of parent types
     staticMap!(.SqlitePersister, Parent!T) mParents;
     
+    // TODO Should only be serenity_ for internal tables
     enum mTableName = `serenity_` ~ T.stringof;
     SqliteDatabase mDb;
 
@@ -86,35 +87,31 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
                 {
                     static assert(false, "Unsupported field type: " ~ field.stringof);
                 }
-                static if (is(typeof({mixin(`enum _ = T.constrain_` ~ fieldName ~ `;`);}())))
+                if (constrained(fieldName, NotNull))
                 {
-                    mixin(`enum constraints = T.constrain_` ~ fieldName ~ `;`);
-                    if (constraints & NotNull)
-                    {
-                        str ~= " NOT NULL";
-                    }
-                    if (constraints & Unique)
-                    {
-                        str ~= " UNIQUE";
-                    }
-                    if (constraints & PrimaryKey)
-                    {
-                        str ~= " PRIMARY KEY";
-                        if (constraints & AutoIncrement)
-                        {
-                            str ~= " AUTOINCREMENT";
-                        }
-                    }
-                    if (constraints & Check)
-                    {
-                        assert(0);
-                    }
-                    // TODO Default value should be pulled of the struct
-                    /*if (constraints & Default)
-                    {
-                        assert(0);
-                    }*/
+                    str ~= " NOT NULL";
                 }
+                if (constrained(fieldName, Unique))
+                {
+                    str ~= " UNIQUE";
+                }
+                if (constrained(fieldName, PrimaryKey))
+                {
+                    str ~= " PRIMARY KEY";
+                    if (constrained(fieldName, AutoIncrement))
+                    {
+                        str ~= " AUTOINCREMENT";
+                    }
+                }
+                if (constrained(fieldName, Check))
+                {
+                    assert(0);
+                }
+                // TODO Default value should be pulled of the struct
+                /*if (constraints & Default)
+                {
+                    assert(0);
+                }*/
                 if (i < typeof(T.tupleof).length - 1)
                 {
                     str ~= ", ";
@@ -123,8 +120,6 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
             str ~= ");";
             return str;
         }();
-        //pragma(msg, createStr);
-        //writefln("Creating table: %s", T.stringof);
         mDb.execute!T(createStr);
     }
 
@@ -357,6 +352,13 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
                     return true;
                 }
             }
+            else static if (fieldName == "id" && is(typeof(T.id) == ulong))
+            {
+                if (field == "id" && constraint & (PrimaryKey | AutoIncrement))
+                {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -424,7 +426,7 @@ unittest
     static struct Test
     {
         // TODO ulong id should automatically be PrimaryKey | AutoIncrement
-        enum constrain_id = PrimaryKey | AutoIncrement;
+        //enum constrain_id = PrimaryKey | AutoIncrement;
         ulong id;
         string b;
 
