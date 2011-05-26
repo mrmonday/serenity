@@ -36,13 +36,15 @@ class Home : Controller
         setTitle("Home controller");
 
         auto doc = new HtmlDocument;
-        foreach (post; posts[$..-10])
+        foreach (post; posts[$..$-10])
         {
             log.info("adding article");
-            auto article = doc.article(true);
-            article.h2.a.attr("href", "/example/view"/*makeUrl("view", post.id)*/).content = post.title;
-            article.time.content = post.time.toSimpleString();
-            article.p.content = post.content;
+            with (doc.article)
+            {
+                h2.a.attr("href", "/example/view"/*makeUrl("view", post.id)*/).content = post.title;
+                time.content = post.time.toSimpleString();
+                p.content = post.content;
+            }
         }
         return doc;
     }

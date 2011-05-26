@@ -9,6 +9,7 @@
  */
 module serenity.persister.Sqlite;
 
+import std.math : abs;
 import std.typecons : Tuple, tuple;
 import std.typetuple;
 
@@ -158,7 +159,7 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
     {
         static if (constrained(getFieldName!(i), c))
         {
-            static if (i < args.tupleof.length - 1 && j < result.tupleof.length - 1)
+            static if (i < args.tupleof.length - 1 && j < result.tupleof.length)
             {
                 removeIf!(c, i + 1, j)(result, args);
             }
@@ -166,7 +167,7 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
         else
         {
             result.field[j] = args.tupleof[i];
-            static if (i < args.tupleof.length - 1 && j < result.tupleof.length - 1)
+            static if (i < args.tupleof.length - 1 && j < result.tupleof.length)
             {
                 removeIf!(c, i + 1, j + 1)(result, args);
             }
@@ -212,8 +213,6 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
             str ~= ");";
             return str;
         }();
-        //pragma(msg, insertStr);
-        //pragma(msg, removeIf!(AutoIncrement).stringof);
         mDb.execute!T(insertStr, removeIf!AutoIncrement(row).tupleof);
         return row;
     }
@@ -221,9 +220,7 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
     T opIndex()(ulong idx) if (primaryKey() != null)
     {
         enum selectStr = selectString() ~ " WHERE `" ~ primaryKey() ~ "` = ?;";
-        //pragma(msg, selectStr);
-        //assert(0);
-        return mDb.execute!T(selectStr);
+        return mDb.execute!T(selectStr, idx + 1)[0];
     }
     
     T opIndex()(ulong) if (primaryKey() == null)
@@ -231,7 +228,7 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
         static assert(false, T.stringof ~ " has no PRIMARY KEY field so cannot be indexed");
     }
 
-    T opIndexAssign()(T value, ulong idx) if (primaryKey() != null)
+    void opIndexAssign()(T row, ulong idx) if (primaryKey() != null)
     {
         enum updateStr = {
             string str = "UPDATE `" ~ mTableName ~ "` SET ";
@@ -250,12 +247,10 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
             str ~= " WHERE `" ~ primaryKey() ~ "` = ?;";
             return str;
         }();
-        //pragma(msg, updateStr);
-        return mDb.execute!T(updateStr);
-        //assert(0);
+        mDb.execute!T(updateStr, removeIf!PrimaryKey(row).tupleof, idx + 1);
     }
 
-    T opIndexAssign()(T, ulong) if (primaryKey() == null)
+    void opIndexAssign()(T, ulong) if (primaryKey() == null)
     {
         static assert(false, T.stringof ~ " has no PRIMARY KEY field so cannot be indexed");
     }
@@ -264,27 +259,49 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
     T[] opSlice()(ulong a, ulong b) if (primaryKey() != null)
     {
         enum selectStr = selectString() ~ " ORDER BY `" ~ primaryKey() ~ "` ASC LIMIT ? OFFSET ?;";
-        //pragma(msg, selectStr);
-        //assert(0);
         return mDb.execute!T(selectStr, b - a, a);
     }
 
     T[] opSlice()(ulong a, Dollar b) if (primaryKey() != null)
     {
         enum selectStr = selectString() ~ " ORDER BY `" ~ primaryKey() ~ "` ASC LIMIT ? OFFSET ?;";
-        //pragma(msg, selectStr);
-        //assert(0);
-        return mDb.execute!T(selectStr, b.value == 0 ? -1 : a + b.value, a);
+        // NOTE Has to be done like this, otherwise -1 is implicitly converted to ulong - not what we want
+        if (b.value == 0)
+        {
+            return mDb.execute!T(selectStr, -1, a);
+        }
+        else
+        {
+            return mDb.execute!T(selectStr, (a + b.value) + 1, a);
+        }
     }
 
     T[] opSlice()(Dollar a, int b) if (primaryKey() != null)
     {
         enum selectStr = selectString() ~ " ORDER BY `" ~ primaryKey() ~ "` DESC LIMIT ? OFFSET ?;";
-        //pragma(msg, selectStr);
-        //assert(0);
-        return mDb.execute!T(selectStr, -b, a.value == 0 ? 0 : -b - a.value);
+        if (a.value == 0)
+        {
+            return mDb.execute!T(selectStr, -1, b);
+        }
+        else
+        {
+            assert(0, "Unimplemented");
+        }
     }
 
+    T[] opSlice()(Dollar a, Dollar b) if (primaryKey() != null)
+    {
+        enum selectStr = selectString() ~ " ORDER BY `" ~ primaryKey() ~ "` DESC LIMIT ? OFFSET ?;";
+        assert(b.value >= 0);
+        auto res = mDb.execute!T(selectStr, abs(a.value - b.value), a.value < b.value ? a.value : b.value);
+        if (b.value < a.value)
+        {
+            // TODO Ewwww. There has to be a nicer way of doing this.
+            return res.reverse;
+        }
+        return res;
+    }
+    
     T[] opSlice(U, V)(U a, V b) if (primaryKey() == null)
     {
         pragma(msg, T.stringof ~ " has no PRIMARY KEY field so cannot be sliced");
@@ -400,4 +417,40 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
     {
         static assert(false, T.stringof ~ " has more than one PRIMARY KEY field. Did you mean to use UNIQUE?");
     }
+}
+
+unittest
+{
+    static struct Test
+    {
+        // TODO ulong id should automatically be PrimaryKey | AutoIncrement
+        enum constrain_id = PrimaryKey | AutoIncrement;
+        ulong id;
+        string b;
+
+        bool opEquals(ref const Test other) const
+        {
+            return id == other.id && b == other.b;
+        }
+    }
+    auto p = new SqlitePersister!Test(new SqliteDatabase(":memory:"));
+    p.initialize();
+    p ~= Test(4, "test1");
+    p ~= Test(0, "test2");
+    p ~= Test(9, "test4");
+    assert(p[0] == Test(1, "test1"));
+    assert(p[1] == Test(2, "test2"));
+    assert(p[2] == Test(3, "test4"));
+    p[2] = Test(9, "test3");
+    assert(p[2] == Test(3, "test3"));
+    assert(p[0..$] == [Test(1, "test1"), Test(2, "test2"), Test(3, "test3")]);
+    assert(p[1..$] == [Test(2, "test2"), Test(3, "test3")]);
+    assert(p[0..2] == [Test(1, "test1"), Test(2, "test2")]);
+    assert(p[$-2..$] == [Test(2, "test2"), Test(3, "test3")]);
+    assert(p[$-2..$-1] == [Test(2, "test2")]);
+    assert(p[$..$-1] == [Test(3, "test3")]);
+    assert(p[$..$-3] == [Test(3, "test3"), Test(2, "test2"), Test(1, "test1")]);
+    assert(p[$..0] == [Test(3, "test3"), Test(2, "test2"), Test(1, "test1")]);
+    // Unimplemented
+    //assert(p[$..1] == [Test(3, "test3"), Test(2, "test2")]);
 }

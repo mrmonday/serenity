@@ -120,6 +120,7 @@ template canPersist(T, U : U*)
     }
     else
     {
+        // TODO Error for non-static local struct?
         enum canPersist = false;
     }
 }

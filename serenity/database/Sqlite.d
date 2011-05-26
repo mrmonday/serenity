@@ -34,7 +34,6 @@ class SqliteDatabase : Database
     {
         if (errCode != SQLITE_OK)
         {
-            //asm { int 3; }
             throw new DatabaseException(file ~ ':' ~ to!string(line) ~ " SQLite error: " ~ to!string(sqlite3_errmsg(mDb)));
         }
     }
@@ -78,6 +77,8 @@ class SqliteDatabase : Database
 
     /**
      * Execute a SQL query
+     *
+     * TODO: Bind[] can probably be removed, the types should be known at compile time
      *
      * Params:
      *  query   = The query to execute
@@ -133,7 +134,7 @@ class SqliteDatabase : Database
                        check(sqlite3_bind_double(statement, i + 1, param.doubleVal));
                        break;
                    case Type.Time:
-                       check(sqlite3_bind_text(statement, i + 1, toStringz(param.timeVal.toISOExtendedString()), -1, null));
+                       check(sqlite3_bind_text(statement, i + 1, toStringz(param.timeVal.toISOExtString()), -1, null));
                        break;
                    case Type.String:
                        check(sqlite3_bind_text(statement, i + 1, toStringz(param.stringVal), -1, null));
@@ -206,7 +207,7 @@ class SqliteDatabase : Database
                         else static if(is(type == DateTime))
                         {
                             auto time =  to!string(sqlite3_column_text(statement, col));
-                            val.tupleof[i] = DateTime.fromISOExtendedString(time);
+                            val.tupleof[i] = DateTime.fromISOExtString(time);
                         }
                         else
                         {
