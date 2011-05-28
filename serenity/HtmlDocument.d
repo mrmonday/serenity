@@ -59,7 +59,7 @@ private string genElementTypeToString()
 {
     string ts = `private string elementTypeToString(ElementType et)
                  {
-                     switch(et)
+                     final switch(et)
                      {
                          case ElementType.Root:
                             return "Root";
@@ -768,7 +768,6 @@ class HtmlDocument : Document
                         break;
                     default:
                         throw new HtmlDocumentSelectorException("Invalid selector string");
-                        break;
                 }
             }
         }
