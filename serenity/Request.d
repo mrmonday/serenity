@@ -88,7 +88,7 @@ struct Post
         return post;
     }
    
-    public string get(string name)
+    public string opIndex(string name)
     {
         return mArgs[name];
     }

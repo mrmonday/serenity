@@ -58,7 +58,7 @@ class Home : Controller
         form.submit(null, null, "Add post");
         if (form.validate())
         {
-            posts ~= Post(0, cast(DateTime)Clock.currTime().toUTC(), request.post.get("title"), request.post.get("content"));
+            posts ~= Post(0, cast(DateTime)Clock.currTime().toUTC(), request.post["title"], request.post["content"]);
             setResponseCode(303);
             setHeader("Location", "/~robert/serenity/");
         }
