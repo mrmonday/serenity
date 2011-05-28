@@ -8,18 +8,18 @@
  * License: New BSD License, see COPYING
  */
 module serenity.SqlPrinter;
-
+version(none):
 package import serenity.Persister;
-package import serenity.SqlQuery;
+package import serenity.persister.Query;
 import serenity.Util;
 
 mixin SerenityException!("SqlPrinter");
 
 class SqlPrinter
 {
-    abstract void print(SqlQuery doc, void delegate(string[]...) dg);
+    abstract void print(Query doc, void delegate(string[]...) dg);
 
-    string getQueryString(SqlQuery doc)
+    string getQueryString(Query doc)
     {
         string ret;
         print(doc, (string[] text...) { foreach (str; text) { ret ~= str; } });

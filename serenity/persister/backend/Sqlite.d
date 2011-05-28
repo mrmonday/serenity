@@ -1,27 +1,30 @@
 /**
  * Serenity Web Framework
  *
- * database/Sqlite.d: Sqlite database interface
+ * persister/backend/Sqlite.d: Sqlite database interface
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.database.Sqlite;
+module serenity.persister.backend.Sqlite;
 
 import core.stdc.string : strlen;
 
 import std.conv;
+import std.datetime;
 import std.string;
 
 import serenity.bindings.Sqlite;
 
-public import serenity.Database;
+import serenity.persister.Query;
+
 import serenity.Serenity;
 import serenity.SqlitePrinter;
 import serenity.Util;
 
-class SqliteDatabase : Database
+// TODO: Should be struct
+class SqliteDatabase
 {
     private sqlite3* mDb;
 
@@ -34,19 +37,20 @@ class SqliteDatabase : Database
     {
         if (errCode != SQLITE_OK)
         {
-            throw new DatabaseException(file ~ ':' ~ to!string(line) ~ " SQLite error: " ~ to!string(sqlite3_errmsg(mDb)));
+            // TODO This should throw some other type of exception
+            throw new Exception(file ~ ':' ~ to!string(line) ~ " SQLite error: " ~ to!string(sqlite3_errmsg(mDb)));
         }
     }
 
-    override public void finalize_()
+    public void finalize()
     {
         sqlite3_close(mDb);
     }
 
-    override protected SqlPrinter getPrinter()
+    /*override protected SqlPrinter getPrinter()
     {
         return new SqlitePrinter;
-    }
+    }*/
     
     public T[] execute(T, U...)(string query, U params)
     {
@@ -151,7 +155,8 @@ class SqliteDatabase : Database
                        check(sqlite3_bind_blob(statement, i + 1, param.ubyteArrVal.ptr, param.ubyteArrVal.length, null));
                        break;
                    default:
-                       throw new DatabaseException( "SQLite error: Unsupported datatype to bind" );
+                       // BUG Should be some other type of exception
+                       throw new Exception( "SQLite error: Unsupported datatype to bind" );
                 }
             }
         }
@@ -225,7 +230,8 @@ class SqliteDatabase : Database
             }
             else
             {
-                throw new DatabaseException("Sqlite error: " ~ to!string(sqlite3_errmsg(mDb)));
+                // BUG TODO Should be some other type of exception
+                throw new Exception("Sqlite error: " ~ to!string(sqlite3_errmsg(mDb)));
             }
         }
         return result;
@@ -235,7 +241,7 @@ class SqliteDatabase : Database
 unittest
 {
     auto db = new SqliteDatabase(":memory:");
-    scope (exit) db.finalize_();
+    scope (exit) db.finalize();
     struct Test
     {
         bool boolVal;
@@ -254,23 +260,23 @@ unittest
         wstring wstringVal;
         ubyte[] ubyteArrVal;
     }
-    auto query = new SqlQuery;
+    auto query = new Query!Test;
     query.createTable("test").bind!(Test)();
-    db.execute!(Test)(db.getPrinter().getQueryString(query), (Bind[]).init, (string[]).init);
-    query = new SqlQuery;
+    //db.execute!(Test)(db.getPrinter().getQueryString(query), (Bind[]).init, (string[]).init);
+    query = new Query!Test;
     query.insert.into("test").values(true, -1, 1, -1, 1, -1, 1, -1, 1, 3.14f, 3.14, "foo", "foo"w, "foo");
-    db.execute!(Test)(db.getPrinter().getQueryString(query), (Bind[]).init, (string[]).init);
+    //db.execute!(Test)(db.getPrinter().getQueryString(query), (Bind[]).init, (string[]).init);
 
-    query = new SqlQuery;
+    query = new Query!Test;
     query.select("*").from("test");
     string[] cols;
     foreach (i, v; typeof(Test.tupleof))
     {
         cols ~= Test.tupleof[i].stringof[7..$];
     }
-    auto results = db.execute!(Test)(db.getPrinter().getQueryString(query), (Bind[]).init, cols);
+    //auto results = db.execute!(Test)(db.getPrinter().getQueryString(query), (Bind[]).init, cols);
 
-    foreach (i, result; results)
+    /*foreach (i, result; results)
     {
         assert(i == 0); // Should only be one result
         assert(result.boolVal == true);
@@ -287,5 +293,5 @@ unittest
         assert(result.stringVal == "foo");
         assert(result.wstringVal == "foo"w, cast(string)result.wstringVal);
         assert(result.ubyteArrVal == cast(ubyte[])"foo");
-    }
+    }*/
 }

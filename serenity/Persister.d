@@ -9,6 +9,8 @@
  */
 module serenity.Persister;
 
+import serenity.persister.Query;
+
 import std.typetuple;
 
 public import std.datetime;
@@ -53,6 +55,10 @@ interface IPersister(T, Backend) if (canPersist!T && is(T == struct) && T.tupleo
 
     /// Return the backend for direct access
     Backend backend() @property;
+
+    /// Return a query for querying the persister
+    Query!T query() @property;
+
 }
 
 /**

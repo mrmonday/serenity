@@ -13,9 +13,9 @@ import std.math : abs;
 import std.typecons : Tuple, tuple;
 import std.typetuple;
 
-import serenity.database.Sqlite;
+import serenity.persister.backend.Sqlite;
 import serenity.Persister;
-import serenity.SqlQuery;
+import serenity.persister.Query;
 
 /// Default database if none is provided
 private SqliteDatabase defaultDatabase;
@@ -28,11 +28,11 @@ public void setDefaultDatabase(SqliteDatabase db)
 final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
 {
     /// TypeTuple of parent types
-    staticMap!(.SqlitePersister, Parent!T) mParents;
+    private staticMap!(.SqlitePersister, Parent!T) mParents;
     
     // TODO Should only be serenity_ for internal tables
     enum mTableName = `serenity_` ~ T.stringof;
-    SqliteDatabase mDb;
+    private SqliteDatabase mDb;
 
     this(SqliteDatabase db=null)
     {
@@ -328,6 +328,11 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
     public SqliteDatabase backend() @property
     {
         return mDb;
+    }
+    
+    public Query!T query() @property
+    {
+        return new Query!T;
     }
 
     /**

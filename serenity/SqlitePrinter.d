@@ -8,12 +8,12 @@
  * License: New BSD License, see COPYING
  */
 module serenity.SqlitePrinter;
-
+version(none):
 public import serenity.SqlPrinter;
 
 class SqlitePrinter : SqlPrinter
 {
-    override void print(SqlQuery doc, void delegate(string[]...) dg)
+    override void print(Query doc, void delegate(string[]...) dg)
     {
         switch (doc.getType())
         {

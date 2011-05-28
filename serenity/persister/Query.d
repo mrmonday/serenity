@@ -1,34 +1,18 @@
 /**
  * Serenity Web Framework
  *
- * SqlQuery.d: Provides ORM functionality for Serenity
+ * persister/Query.d: Provides a generic method for querying a persister
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.SqlQuery;
+module serenity.persister.Query;
 
-import serenity.Database;
+import serenity.Persister;
 import serenity.Util;
 
-//public import std.datetime;
 import std.conv;
-
-/*enum : uint
-{
-    None = 0,
-    NotNull = 1,
-    Unique = 2,
-    PrimaryKey = 4,
-    ForeignKey = 8,
-    Check = 16,
-    Default = 32,
-    AutoIncrement = 64
-}
-
-alias uint Constraint;*/
-import serenity.Persister;// : Constraint;
 
 enum Type
 {
@@ -217,7 +201,7 @@ struct Value
     }
 }
 
-class SqlQuery
+final class Query(T)
 {
     private QueryType mQt;
     private Table[] mTables;
@@ -526,7 +510,7 @@ class SqlQuery
      * Returns:
      *  The result of the query
      */
-    public T[] execute(T)()
+    public T[] execute()
     {
         if (mQt == QueryType.Select && mColumns.length == 1 && mColumns[0] == "*")
         {
@@ -536,6 +520,7 @@ class SqlQuery
                 mColumns ~= T.tupleof[i].stringof[T.stringof.length+3..$] ;
             }
         }
-        return Database.execute!T(this);
+        assert(0, "unimplemented");
+        //return Database.execute!T(this);
     }
 }

@@ -10,7 +10,7 @@
 module bootstrap;
 
 import serenity.Serenity;
-import serenity.database.Sqlite;
+import serenity.persister.backend.Sqlite;
 import serenity.persister.Sqlite;
 
 import controllers;

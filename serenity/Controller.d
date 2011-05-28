@@ -11,7 +11,6 @@ module serenity.Controller;
 
 import serenity.Layout;
 import serenity.Log;
-import serenity.Model;
 import serenity.Util;
 
 public import serenity.HtmlDocument;
@@ -58,45 +57,6 @@ mixin template registerController(T : Controller)
             }
         }
         Controller.register(T.classinfo, members);
-    }
-}
-
-/**
- * Register a class as a controller with a given model
- *
- * This is a wrapper around registerController!(T) to add in convinience
- * methods for using models.
- * Examples:
- * ----
- *  import myPlugin.models.MyModel;
- *
- *  class MyController : Controller
- *  {
- *      mixin registerController!(MyController, MyModel);
- *      void myMethod()
- *      {
- *          foreach (item; model.getItems())
- *          {
- *              /// Do something
- *          }
- *      }
- *  }
- * ----
- * See_Also:
- *  example/controllers/Home.d
- */
-mixin template registerController(T : Controller, M : Model)
-{
-    mixin registerController!T;
-    private static M _model;
-    static this()
-    {
-        _model = new M;
-    }
-
-    final protected M model()
-    {
-        return _model;
     }
 }
 
