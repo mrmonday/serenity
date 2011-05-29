@@ -14,13 +14,10 @@ public import serenity.document.Document;
 import serenity.core.Log;
 import serenity.core.Util;
 
-template registerLayout(T)
+template registerLayout(T : Layout)
 {
     static this()
     {
-        // TODO: This should be static, blame dmd >.>
-        // See: http://d.puremagic.com/issues/show_bug.cgi?id=4033
-        //assert(isDerived(T.classinfo, Layout.classinfo));
         Layout.register(T.classinfo);
     }
 }
