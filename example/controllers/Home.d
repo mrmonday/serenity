@@ -9,7 +9,7 @@
  */
 module example.controllers.Home;
 
-import serenity.Controller;
+import serenity.core.Controller;
 
 struct Post
 {

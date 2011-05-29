@@ -9,8 +9,8 @@
  */
 module example.layouts.Default;
 
-import serenity.Layout;
-import serenity.HtmlDocument;
+import serenity.core.Layout;
+import serenity.document.HtmlDocument;
 
 class Default : Layout
 {

@@ -9,7 +9,7 @@
  */
 module example.controllers.Error;
 
-import serenity.Controller;
+import serenity.core.Controller;
 
 class Error : Controller
 {

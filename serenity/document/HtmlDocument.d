@@ -1,17 +1,17 @@
 /**
  * Serenity Web Framework
  *
- * HtmlDocument.d: Represents an HTML document
+ * document/HtmlDocument.d: Represents an HTML document
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.HtmlDocument;
+module serenity.document.HtmlDocument;
 
-public import serenity.Document;
+public import serenity.document.Document;
 
-import serenity.Util;
+import serenity.core.Util;
 
 import std.array : split;
 import std.algorithm;

@@ -1,16 +1,16 @@
 /**
  * Serenity Web Framework
  *
- * Request.d: Represents a request
+ * core/Request.d: Represents a request
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.Request;
+module serenity.core.Request;
 
-import serenity.Form;
-import serenity.Util;
+import serenity.core.Form;
+import serenity.core.Util;
 
 import std.conv;
 import std.stream;

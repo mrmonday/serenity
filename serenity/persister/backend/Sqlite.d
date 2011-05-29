@@ -19,9 +19,8 @@ import serenity.bindings.Sqlite;
 
 import serenity.persister.Query;
 
-import serenity.Serenity;
-import serenity.SqlitePrinter;
-import serenity.Util;
+import serenity.core.Serenity;
+import serenity.core.Util;
 
 // TODO: Should be struct
 class SqliteDatabase

@@ -1,22 +1,22 @@
 /**
  * Serenity Web Framework
  *
- * Serenity.d: Entry point for Serenity applications
+ * core/Serenity.d: Entry point for Serenity applications
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.Serenity;
+module serenity.core.Serenity;
 
-import serenity.Backend;
-import serenity.Controller;
-import serenity.Dispatcher;
-import serenity.HtmlPrinter;
-import serenity.Request;
+import serenity.backend.Backend;
+import serenity.core.Controller;
+import serenity.core.Dispatcher;
+import serenity.document.HtmlPrinter;
+import serenity.core.Request;
 
-public import serenity.Log;
-public import serenity.Router;
+public import serenity.core.Log;
+public import serenity.core.Router;
 
 import std.datetime;
 import std.stream;

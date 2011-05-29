@@ -1,15 +1,15 @@
 /**
  * Serenity Web Framework
  *
- * Html5Printer.d: Print an HtmlDocument as HTML 5
+ * document/Html5Printer.d: Print an HtmlDocument as HTML 5
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011 Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.Html5Printer;
+module serenity.document.Html5Printer;
 
-package import serenity.HtmlDocument;
+package import serenity.document.HtmlDocument;
 
 import std.algorithm;
 

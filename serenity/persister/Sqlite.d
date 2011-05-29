@@ -14,7 +14,7 @@ import std.typecons : Tuple, tuple;
 import std.typetuple;
 
 import serenity.persister.backend.Sqlite;
-import serenity.Persister;
+import serenity.persister.Persister;
 import serenity.persister.Query;
 
 /// Default database if none is provided

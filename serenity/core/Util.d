@@ -1,13 +1,13 @@
 /**
  * Serenity Web Framework
  *
- * Util.d: Utilities for Serenity
+ * core/Util.d: Utilities for Serenity
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.Util;
+module serenity.core.Util;
 
 /**
  * Quick and dirty hack for making the first character of a string lower case

@@ -1,19 +1,19 @@
 /**
  * Serenity Web Framework
  *
- * Router.d: Route a request from a given path to the correct controller
+ * core/Router.d: Route a request from a given path to the correct controller
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.Router;
+module serenity.core.Router;
 
 import std.algorithm;
 import std.string;
 
-import serenity.Controller;
-import serenity.Util;
+import serenity.core.Controller;
+import serenity.core.Util;
 
 mixin SerenityException!("Router");
 

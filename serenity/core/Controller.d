@@ -1,21 +1,21 @@
 /**
  * Serenity Web Framework
  *
- * Controller.d: Provides a base class for controllers
+ * core/Controller.d: Provides a base class for controllers
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.Controller;
+module serenity.core.Controller;
 
-import serenity.Layout;
-import serenity.Log;
-import serenity.Util;
+import serenity.core.Layout;
+import serenity.core.Log;
+import serenity.core.Util;
 
-public import serenity.HtmlDocument;
-public import serenity.Persister;
-public import serenity.Request;
+public import serenity.document.HtmlDocument;
+public import serenity.persister.Persister;
+public import serenity.core.Request;
 
 import std.string;
 

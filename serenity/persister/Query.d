@@ -9,8 +9,8 @@
  */
 module serenity.persister.Query;
 
-import serenity.Persister;
-import serenity.Util;
+import serenity.persister.Persister;
+import serenity.core.Util;
 
 import std.conv;
 

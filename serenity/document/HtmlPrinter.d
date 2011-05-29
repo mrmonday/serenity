@@ -1,15 +1,15 @@
 /**
  * Serenity Web Framework
  *
- * HtmlPrinter.d: Used to print HTML 5 with HTML 4 wrappers
+ * document/HtmlPrinter.d: Used to print HTML 5 with HTML 4 wrappers
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.HtmlPrinter;
+module serenity.document.HtmlPrinter;
 
-import serenity.Html5Printer;
+import serenity.document.Html5Printer;
 
 class HtmlPrinter : Html5Printer
 {

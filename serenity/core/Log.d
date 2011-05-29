@@ -1,13 +1,13 @@
 /**
  * Serenity Web Framework
  *
- * Log.d: Logging support for Serenity
+ * core/Log.d: Logging support for Serenity
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011 Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.Log;
+module serenity.core.Log;
 
 import std.stream;
 import std.string;

@@ -11,8 +11,8 @@ module serenity.backend.FastCGI;
 
 import serenity.bindings.FastCGI;
 
-import serenity.Backend;
-import serenity.Serenity;
+import serenity.backend.Backend;
+import serenity.core.Serenity;
 
 import std.conv;
 import std.stream;

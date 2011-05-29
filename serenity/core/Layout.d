@@ -1,18 +1,18 @@
 /**
  * Serenity Web Framework
  *
- * Layout.d: Wrap a controllers output in a layout
+ * core/Layout.d: Wrap a controllers output in a layout
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.Layout;
+module serenity.core.Layout;
 
-public import serenity.Controller;
-public import serenity.Document;
-import serenity.Log;
-import serenity.Util;
+public import serenity.core.Controller;
+public import serenity.document.Document;
+import serenity.core.Log;
+import serenity.core.Util;
 
 template registerLayout(T)
 {
