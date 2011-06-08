@@ -9,14 +9,12 @@
  * License: New BSD License, see COPYING
  */
 
-import core.thread;
-
-import std.concurrency;
 import std.exception;
 import std.file;
 import std.getopt;
 import std.path;
 import std.process;
+import std.parallelism;
 import std.stdio;
 
 enum serenity = [
@@ -55,36 +53,73 @@ enum persisters = [
 
 shared string buildOpts;
 shared string[] packages;
+shared bool verbose;
+
+string green(string str) @property
+{
+    version (Posix)
+    {
+        return "\033[1;32m" ~ str ~ "\033[0;38m";
+    }
+    else
+    {
+        return str;
+    }
+}
+
+string red(string str) @property
+{
+    version (Posix)
+    {
+        return "\033[1;31m" ~ str ~ "\033[0;38m";
+    }
+    else
+    {
+        return str;
+    }
+}
+
+string yellow(string str) @property
+{
+    version (Posix)
+    {
+        return "\033[1;33m" ~ str ~ "\033[0;38m";
+    }
+    else
+    {
+        return str;
+    }
+}
 
 void buildSerenity()
 {
-    writeln("> Building lib/libserenity.a");
+    writeln("> Building lib/libserenity.a".green);
     string build = "/usr/bin/env dmd -oflib/libserenity.a -lib ";
     foreach (file; serenity)
     {
         build ~= file ~ ' ';
     }
     build ~= buildOpts;
-    writefln("> " ~ build);
+    verbose && writefln(yellow("> " ~ build));
     enforce(system(build) == 0);
 }
 
 void buildPackage(string p)
 {
-    writefln("> Building package lib/libserenity-%s.a", p);
+    writefln("> Building package lib/libserenity-%s.a".green, p);
     string build = "/usr/bin/env dmd -oflib/libserenity-" ~ p ~ ".a -lib ";
     foreach (file; listDir(p, "*.d"))
     {
         build ~= file ~ ' ';
     }
     build ~= buildOpts;
-    writefln("> " ~ build);
+    verbose && writefln(yellow("> " ~ build));
     enforce(system(build) == 0);
 }
 
 void genControllers()
 {
-    writeln("> Generating controllers.d");
+    writeln("> Generating controllers.d".green);
     auto file = File("controllers.d", "w");
     file.writeln(`// Automatically generated, do not edit by hand`);
     file.writeln(`module controllers;`);
@@ -100,7 +135,7 @@ void genControllers()
 
 void genLayouts()
 {
-    writeln("> Generating layouts.d");
+    writeln("> Generating layouts.d".green);
     auto file = File("layouts.d", "w");
     file.writeln(`// Automatically generated, do not edit by hand`);
     file.writeln(`module layouts;`);
@@ -116,26 +151,26 @@ void genLayouts()
 
 void buildBinary()
 {
-    writeln("> Building binary bin/serenity.fcgi");
     enforce(packages.length, "Cannot build a binary with no packages");
     genControllers();
     genLayouts();
+    writeln("> Building binary bin/serenity.fcgi".green);
     string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d controllers.d layouts.d lib/libserenity.a ";
     foreach (p; packages)
     {
         build ~= "lib/libserenity-" ~ p ~ ".a ";
     }
     build ~= buildOpts;
-    writefln("> " ~ build);
+    verbose && writefln(yellow("> " ~ build));
     enforce(system(build) == 0);
 }
 
 void main(string[] args)
 {
     bool buildBin = true;
-    bool exit, release;
+    bool clean, exit, release;
     getopt(args,
-            "release", &release,
+            "r|release", &release,
             "no-binary", { buildBin = false; },
             "enable-backend", (string, string backend)
                               {
@@ -148,11 +183,11 @@ void main(string[] args)
                                     enforce(persister in persisters, "Invalid Persister");
                                     buildOpts ~= persisters[persister];
                                 },
-            "build-package", (string, string p)
+            "p|build-package", (string, string p)
                              {
                                  packages ~= p;
                              },
-            "help", {
+            "h|help", {
                         writeln("Serenity Web Framework Builder");
                         writeln("usage: ./build.d [options]");
                         writeln("");
@@ -163,13 +198,33 @@ void main(string[] args)
                         writeln("   --enable-persister=<persister>  enable persister <persister>");
                         writeln("   --build-package=<package>       build package <package>");
                         writeln("   --help                          print this help message");
+                        writeln("   --clean                         clean the build");
+                        writeln("   --verbose                       print commands as they are run");
                         exit = true;
-                    }
+                    },
+            "c|clean", { clean = true; },
+            "v|verbose", { verbose = true; }
          );
     if (exit)
     {
         return;
     }
+
+    chdir(dirname(__FILE__));
+
+    if (clean)
+    {
+        scope(failure) writeln(">>> BUILD FAILED <<<".red);
+        writeln("> Cleaning build".green);
+        // TODO Use Regex when std.file is updated to use it
+        foreach (f; listDir(".", "*.o") ~ listDir(".", "*.a") ~ ["controllers.d", "layouts.d", "bin/serenity.fcgi"])
+        {
+            verbose && writefln(yellow("> rm " ~ f));
+            remove(f);
+        }
+        return;
+    }
+
     if (!buildOpts)
     {
         if (release)
@@ -191,14 +246,17 @@ void main(string[] args)
     {
         packages ~= "example";
     }
-    spawn(&buildSerenity);
-    foreach (p; packages)
+
     {
-        buildPackage(p);
-    }
-    if (buildBin)
-    {
-        thread_joinAll();
-        buildBinary();
+        scope(failure) writeln(">>> BUILD FAILED <<<".red);
+        taskPool.put(task!buildSerenity());
+        foreach (p; parallel(packages))
+        {
+            buildPackage(p);
+        }
+        if (buildBin)
+        {
+            buildBinary();
+        }
     }
 }
