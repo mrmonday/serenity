@@ -14,6 +14,7 @@ import serenity.bindings.FastCGI;
 import serenity.backend.Backend;
 import serenity.core.Serenity;
 
+import std.algorithm;
 import std.conv;
 import std.stream;
 import std.string;
@@ -66,8 +67,8 @@ final class FastCGI : Backend
         string[string] ret;
         for(; *envp !is null; envp++)
         {
-            auto split = split(to!string(*envp), "=");
-            ret[split[0]] = split[1];
+            auto split = findSplit(to!string(*envp), "=");
+            ret[split[0]] = split[2];
         }
         return ret.dup;
     }
