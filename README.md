@@ -7,7 +7,9 @@ A pre-alpha web framework designed for rapid development, lightning fast perform
 Requires dmd 2.053 to build.
 
 On windows use:
+
     dmd -w -O -inline -run build.d 
 
 Otherwise:
+
     ./build.d
