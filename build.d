@@ -91,6 +91,22 @@ string yellow(string str) @property
     }
 }
 
+void benforce(string file = __FILE__, size_t line = __LINE__)(bool value, string msg)
+{
+    if (!value)
+    {
+        throw new BuildFail(msg, file, line);
+    }
+}
+
+class BuildFail : Exception
+{
+    this(string msg, string file, size_t line)
+    {
+        super(msg, file, line);
+    }
+}
+
 void buildSerenity()
 {
     writeln("> Building lib/libserenity.a".green);
@@ -101,7 +117,7 @@ void buildSerenity()
     }
     build ~= buildOpts;
     verbose && writefln(yellow("> " ~ build));
-    enforce(system(build) == 0);
+    benforce(system(build) == 0, "lib/libserenity.a");
 }
 
 void buildPackage(string p)
@@ -114,7 +130,7 @@ void buildPackage(string p)
     }
     build ~= buildOpts;
     verbose && writefln(yellow("> " ~ build));
-    enforce(system(build) == 0);
+    benforce(system(build) == 0, "lib/libserenity-" ~ p);
 }
 
 void genControllers()
@@ -162,10 +178,10 @@ void buildBinary()
     }
     build ~= buildOpts;
     verbose && writefln(yellow("> " ~ build));
-    enforce(system(build) == 0);
+    benforce(system(build) == 0, "bin/serenity.fcgi");
 }
 
-void main(string[] args)
+int main(string[] args)
 {
     bool buildBin = true;
     bool clean, exit, release;
@@ -207,7 +223,7 @@ void main(string[] args)
          );
     if (exit)
     {
-        return;
+        return 0;
     }
 
     chdir(dirname(__FILE__));
@@ -222,7 +238,7 @@ void main(string[] args)
             verbose && writefln(yellow("> rm " ~ f));
             remove(f);
         }
-        return;
+        return 0;
     }
 
     if (!buildOpts)
@@ -247,16 +263,31 @@ void main(string[] args)
         packages ~= "example";
     }
 
+    try
     {
-        scope(failure) writeln(">>> BUILD FAILED <<<".red);
-        taskPool.put(task!buildSerenity());
+        auto t = task!buildSerenity();
+        taskPool.put(t);
         foreach (p; parallel(packages))
         {
             buildPackage(p);
         }
+        t.yieldForce();
         if (buildBin)
         {
             buildBinary();
         }
     }
+    catch (BuildFail e)
+    {
+        stderr.writefln(red("> Build of " ~ e.msg ~ " failed"));
+        stderr.writeln(">>> BUILD FAILED <<<".red);
+        return 1;
+    }
+    catch (Throwable e)
+    {
+        stderr.writefln(e.toString());
+        stderr.writeln(">>> BUILD FAILED <<<".red);
+        return 1;
+    }
+    return 0;
 }
