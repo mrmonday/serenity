@@ -203,13 +203,10 @@ class Request
      */
     public string getHeader(string name)
     {
-        try
+        if (auto header = name in mArgs)
         {
-            return mArgs[name];
+            return *header;
         }
-        catch
-        {
-            return null;
-        }
+        return null;
     }
 }
