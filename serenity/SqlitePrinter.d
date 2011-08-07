@@ -13,8 +13,13 @@ public import serenity.SqlPrinter;
 
 class SqlitePrinter : SqlPrinter
 {
-    override void print(Query doc, void delegate(string[]...) dg)
+    override void print(Query doc, void delegate(string[]) _dg)
     {
+        // TODO Remove this ugly hack - it's a work around for dmd bug #6341
+        void dg(string[] strs...)
+        {
+            _dg(strs);
+        }
         switch (doc.getType())
         {
             case QueryType.Select:

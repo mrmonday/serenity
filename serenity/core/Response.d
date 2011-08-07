@@ -119,7 +119,7 @@ class Response
            stdout.write("\r\n"c);
        }
        stdout.write("\r\n"c);
-       printer.print(cast(HtmlDocument)mDocument, (string[] strs...) { foreach (str; strs) stdout.write(str); });
+       printer.print(cast(HtmlDocument)mDocument, (string[] strs) { foreach (str; strs) stdout.write(str); });
        if (mRequest.protocol & Request.Protocol.Cli)
        {
            stdout.write("\r\n"c);

@@ -23,14 +23,19 @@ static this()
 
 class Html5Printer
 {
-    void print(HtmlDocument doc, void delegate(string[]...) dg)
+    void print(HtmlDocument doc, void delegate(string[]) _dg)
     {
+        // TODO Remove this ugly hack - it's a work around for dmd bug #6341
+        void dg(string[] strs...)
+        {
+            _dg(strs);
+        }
         switch (doc.getType())
         {
             case ElementType.Root:
                 foreach (child; doc.find("> *"))
                 {
-                    print(child, dg);
+                    print(child, _dg);
                 }
                 break;
             case ElementType.Doctype:
@@ -51,7 +56,7 @@ class Html5Printer
                 dg(doc.getContent());
                 foreach (child; doc.find("> *"))
                 {
-                    print(child, dg);
+                    print(child, _dg);
                 }
                 if (!noClosingTag.canFind(doc.typeName()))
                 {
