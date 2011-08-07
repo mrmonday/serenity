@@ -50,13 +50,15 @@ final class FastCGIOutputStream : WhiteHole!OutputStream
     // TODO: Should throw on error
     override void write(const(char)[] str)
     {
-        FCGX_PutStr(str.ptr, str.length, mStream);
+        assert(str.length < int.max); // FIXME
+        FCGX_PutStr(str.ptr, cast(int)str.length, mStream);
     }
 
     // TODO: Should throw on error
     override void writeLine(const(char)[] str)
     {
-        FCGX_PutStr((str ~ "\r\n").ptr, str.length + 2, mStream);
+        assert(str.length + 2 < int.max); // FIXME
+        FCGX_PutStr((str ~ "\r\n").ptr, cast(int)(str.length + 2), mStream);
     }
 }
 

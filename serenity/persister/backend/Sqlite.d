@@ -13,6 +13,7 @@ import core.stdc.string : strlen;
 
 import std.conv;
 import std.datetime;
+import std.exception;
 import std.string;
 
 import serenity.bindings.Sqlite;
@@ -94,11 +95,14 @@ class SqliteDatabase
         sqlite3_stmt* statement;
         // TODO Deal with tail
         char* tail;
-        check(sqlite3_prepare_v2(mDb, toStringz(query), query.length, &statement, &tail));
+        // TODO Clean this up
+        enforce(query.length < int.max);
+        check(sqlite3_prepare_v2(mDb, toStringz(query), cast(int)query.length, &statement, &tail));
         scope (exit) check(sqlite3_finalize(statement));
         if (params.length > 0)
         {
-            foreach (i, param; params)
+            enforce(params.length < int.max);
+            foreach (int i, param; params)
             {
                 switch (param.type)
                 {
@@ -151,7 +155,8 @@ class SqliteDatabase
                        check(sqlite3_bind_text16(statement, i + 1, param.wstringVal.ptr, -1, null));
                        break;
                    case Type.UbyteArr:
-                       check(sqlite3_bind_blob(statement, i + 1, param.ubyteArrVal.ptr, param.ubyteArrVal.length, null));
+                       enforce(param.ubyteArrVal.length < int.max);
+                       check(sqlite3_bind_blob(statement, i + 1, param.ubyteArrVal.ptr, cast(int)param.ubyteArrVal.length, null));
                        break;
                    default:
                        // BUG Should be some other type of exception
@@ -165,7 +170,7 @@ class SqliteDatabase
             if (st == SQLITE_ROW)
             {
                 T val;
-                size_t col = 0;
+                int col = 0;
                 if (columns is null)
                 {
                     columns = new string[T.tupleof.length];
@@ -187,7 +192,7 @@ class SqliteDatabase
                         }
                         else static if(is(type == long) || is(type == ulong))
                         {
-                            val.tupleof[i] = cast(type)sqlite3_column_int64(statement, col);
+                           val.tupleof[i] = cast(type)sqlite3_column_int64(statement, col);
                         }
                         else static if(is(type == float) || is(type == double))
                         {

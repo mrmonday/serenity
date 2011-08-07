@@ -12,6 +12,8 @@ module serenity.core.Log;
 import std.stream;
 import std.string;
 
+version(X86_64) import core.vararg;
+
 class Logger
 {
     private string mName;
