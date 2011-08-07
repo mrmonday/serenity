@@ -9,13 +9,16 @@
  * License: New BSD License, see COPYING
  */
 
+import std.algorithm;
 import std.exception;
 import std.file;
 import std.getopt;
 import std.path;
 import std.process;
 import std.parallelism;
+import std.range;
 import std.stdio;
+import std.string;
 
 enum serenity = [
                     "serenity/backend/Backend.d",
@@ -118,19 +121,21 @@ void buildSerenity()
     build ~= buildOpts;
     verbose && writefln(yellow("> " ~ build));
     benforce(system(build) == 0, "lib/libserenity.a");
+    benforce("lib/libserenity.a".exists, "lib/libserenity.a");
 }
 
 void buildPackage(string p)
 {
     writefln("> Building package lib/libserenity-%s.a".green, p);
     string build = "/usr/bin/env dmd -oflib/libserenity-" ~ p ~ ".a -lib ";
-    foreach (file; listDir(p, "*.d"))
+    foreach (file; filter!q{endsWith(a.name, ".d")}(dirEntries(p, SpanMode.depth)))
     {
-        build ~= file ~ ' ';
+        build ~= file.name ~ ' ';
     }
     build ~= buildOpts;
     verbose && writefln(yellow("> " ~ build));
-    benforce(system(build) == 0, "lib/libserenity-" ~ p);
+    benforce(system(build) == 0, "lib/libserenity-" ~ p ~ ".a");
+    benforce(exists("lib/libserenity-" ~ p ~ ".a"), "lib/libserenity-" ~ p ~ ".a");
 }
 
 void genControllers()
@@ -141,10 +146,9 @@ void genControllers()
     file.writeln(`module controllers;`);
     foreach (p; packages)
     {
-        // BUG Shouldn't be recursive
-        foreach (f; listDir(p ~ "/controllers/", "*.d"))
+        foreach (f; filter!q{endsWith(a.name, ".d")}(dirEntries(p ~ "/controllers/", SpanMode.shallow)))
         {
-            file.writefln("import %s.controllers.%s;", p, basename(f, ".d"));
+            file.writefln("import %s.controllers.%s;", p, basename(f.name, ".d"));
         }
     }
 }
@@ -157,10 +161,9 @@ void genLayouts()
     file.writeln(`module layouts;`);
     foreach (p; packages)
     {
-        // BUG Shouldn't be recursive
-        foreach (f; listDir(p ~ "/layouts/", "*.d"))
+        foreach (f; filter!q{endsWith(a.name, ".d")}(dirEntries(p ~ "/layouts/", SpanMode.shallow)))
         {
-            file.writefln("import %s.layouts.%s;", p, basename(f, ".d"));
+            file.writefln("import %s.layouts.%s;", p, basename(f.name, ".d"));
         }
     }
 }
@@ -171,11 +174,13 @@ void buildBinary()
     genControllers();
     genLayouts();
     writeln("> Building binary bin/serenity.fcgi".green);
-    string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d controllers.d layouts.d lib/libserenity.a ";
+    string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d controllers.d layouts.d ";
     foreach (p; packages)
     {
         build ~= "lib/libserenity-" ~ p ~ ".a ";
     }
+    // This has to go after to prevent linker errors
+    build ~= "lib/libserenity.a ";
     build ~= buildOpts;
     verbose && writefln(yellow("> " ~ build));
     benforce(system(build) == 0, "bin/serenity.fcgi");
@@ -185,6 +190,7 @@ int main(string[] args)
 {
     bool buildBin = true;
     bool clean, exit, release;
+    string remote = null, remoteDir = null;
     getopt(args,
             "r|release", &release,
             "no-binary", { buildBin = false; },
@@ -203,6 +209,8 @@ int main(string[] args)
                              {
                                  packages ~= p;
                              },
+            "remote", &remote,
+            "remote-dir", &remoteDir,
             "h|help", {
                         writeln("Serenity Web Framework Builder");
                         writeln("usage: ./build.d [options]");
@@ -213,6 +221,8 @@ int main(string[] args)
                         writeln("   --enable-backend=<backend>      enable backend <backend>");
                         writeln("   --enable-persister=<persister>  enable persister <persister>");
                         writeln("   --build-package=<package>       build package <package>");
+                        writeln("   --remote=<user@host>            build serenity on a remote machine");
+                        writeln("   --remote-dir=<directory>        specify the directory to install to");
                         writeln("   --help                          print this help message");
                         writeln("   --clean                         clean the build");
                         writeln("   --verbose                       print commands as they are run");
@@ -228,15 +238,66 @@ int main(string[] args)
 
     chdir(dirname(__FILE__));
 
+    if (remote)
+    {
+        if (!remoteDir)
+        {
+            stderr.writefln("> Must specify a directory to install to on the remote".red);
+            return 1;
+        }
+        try
+        {
+            verbose && writefln(yellow("> ssh " ~ remote ~ " mktemp -d -t serenityBuildXXXXXXXX"));
+            auto tmp = chomp(shell("ssh " ~ remote ~ " mktemp -d -t serenityBuildXXXXXXXX"));
+            verbose && writefln(yellow("> scp -r . " ~ remote ~ ":" ~ tmp));
+            benforce(system("scp -qCr . " ~ remote ~ ":" ~ tmp ) == 0, "Copying files to remote");
+            // TODO Passthrough args
+            verbose && writefln(yellow("> ssh " ~ remote ~ " /usr/bin/env dmd -w -O -release -inline -run " ~ tmp ~ "/build.d"));
+            benforce(system("ssh " ~ remote ~ " /usr/bin/env dmd -w -O -release -inline -run " ~ tmp ~ "/build.d") == 0, "Building on remote");
+            verbose && writefln(yellow("> ssh " ~ remote ~ " 'cp -r " ~ tmp ~ " " ~ remoteDir ~ "'"));
+            benforce(system("ssh " ~ remote ~ " 'cp -r " ~ tmp ~ "/* " ~ remoteDir ~ "'") == 0, "Installation");
+            verbose && writefln(yellow("> ssh " ~ remote ~ " 'rm -rf " ~ tmp ~ "'"));
+            benforce(system("ssh " ~ remote ~ " 'rm -rf " ~ tmp ~ "'") == 0, "Removing temporary files");
+            return 0;
+        }
+        catch (BuildFail e)
+        {
+            stderr.writefln(red("> " ~ e.msg ~ " failed"));
+            stderr.writeln(">>> REMOTE BUILD FAILED <<<".red);
+            return 1;
+        }
+        catch (Throwable e)
+        {
+            stderr.writefln(e.toString());
+            stderr.writeln(">>> REMOTE BUILD FAILED <<<".red);
+            return 1;
+        }
+    }
+
     if (clean)
     {
-        scope(failure) writeln(">>> BUILD FAILED <<<".red);
+        scope(failure) stderr.writeln(">>> BUILD FAILED <<<".red);
         writeln("> Cleaning build".green);
-        // TODO Use Regex when std.file is updated to use it
-        foreach (f; listDir(".", "*.o") ~ listDir(".", "*.a") ~ ["controllers.d", "layouts.d", "bin/serenity.fcgi"])
+        void removeLoopBody(string f)
         {
-            verbose && writefln(yellow("> rm " ~ f));
-            remove(f);
+            if (f.exists)
+            {
+                verbose && writefln(yellow("> rm " ~ f));
+                remove(f);
+            }
+        }
+        // TODO Use Regex when std.file is updated to use it
+        foreach (f; filter!q{endsWith(a.name, ".o")}(dirEntries(".", SpanMode.depth)))
+        {
+            removeLoopBody(f.name);
+        }
+        foreach (f; filter!q{endsWith(a.name, ".a")}(dirEntries(".", SpanMode.depth)))
+        {
+            removeLoopBody(f.name);
+        }
+        foreach (f; ["controllers.d", "layouts.d", "bin/serenity.fcgi"])
+        {
+            removeLoopBody(f);
         }
         return 0;
     }
@@ -245,17 +306,17 @@ int main(string[] args)
     {
         if (release)
         {
-            buildOpts ~= "-w -O -release -inline " ~ backends["FastCGI"] ~ persisters["SQLite"];
+            buildOpts ~= "-wi -O -release -inline " ~ backends["FastCGI"] ~ persisters["SQLite"];
         }
         else
         {
             // TODO Should use -w too, disabled until new std.stream is in place
-            buildOpts = "-gc -debug -unittest " ~ backends["FastCGI"] ~ persisters["SQLite"];
+            buildOpts = "-d -wi -gc -debug -unittest " ~ backends["FastCGI"] ~ persisters["SQLite"];
         }
     }
     else if (release)
     {
-        buildOpts = "-w -O -release -inline " ~ buildOpts;
+        buildOpts = "-wi -O -release -inline " ~ buildOpts;
     }
 
     if (!packages)
