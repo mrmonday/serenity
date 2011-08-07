@@ -224,7 +224,7 @@ private final class Route
                     }
                     if (mRoute.plugin == "[plugin]")
                     {
-                        mPath.plugin = tolower(url[i..j]);
+                        mPath.plugin = toLower(url[i..j]);
                     }
                     i = j;
                     quality += 2;
@@ -244,7 +244,7 @@ private final class Route
                     }
                     if (mRoute.controller == "[controller]")
                     {
-                        mPath.controller = tolower(url[i..j]).dup;
+                        mPath.controller = toLower(url[i..j]).dup;
                         mPath.controller[0] = cast(char)(mPath.controller[0]-32);
                     }
                     i = j;
@@ -265,7 +265,7 @@ private final class Route
                     }
                     if (mRoute.action == "[action]")
                     {
-                        mPath.action = tolower(url[i..j]);
+                        mPath.action = toLower(url[i..j]);
                     }
                     i = j;
                     quality += 2;

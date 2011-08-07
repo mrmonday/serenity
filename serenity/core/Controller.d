@@ -115,7 +115,7 @@ abstract class Controller
         controller.mArguments = args;
         controller.mHeaders["Content-Type"] = "text/html; charset=utf-8";
         controller.mPlugin = plugin;
-        controller.mViewMethod = "view" ~ tolower(action);
+        controller.mViewMethod = "view" ~ toLower(action);
         controller.setResponseCode(code);
         return controller;
     }

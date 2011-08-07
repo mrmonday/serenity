@@ -748,6 +748,7 @@ class HtmlDocument : Document
                             // > foobar
                             matches ~= find([selector[1..$]]);
                         }
+                        break;
                     case "+":
                         break;
                     case "~":

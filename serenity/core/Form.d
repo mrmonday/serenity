@@ -35,7 +35,7 @@ string genInputMethods()
         ret ~= `public Field ` ~ type ~ `(string label, string name, string value=null)
                 {
                     auto par = mForm.p;
-                    auto el = par.input.attr("type", tolower("` ~ type ~ `"c));
+                    auto el = par.input.attr("type", toLower("` ~ type ~ `"c));
                     if (label !is null)
                     {
                         par.label(true).attr("for", name).content = label;
