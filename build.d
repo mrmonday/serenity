@@ -174,13 +174,13 @@ void buildBinary()
     genControllers();
     genLayouts();
     writeln("> Building binary bin/serenity.fcgi".green);
-    string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d controllers.d layouts.d ";
+    string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d controllers.d layouts.d -L-Llib ";
     foreach (p; packages)
     {
-        build ~= "lib/libserenity-" ~ p ~ ".a ";
+        build ~= "-L-lserenity-" ~ p ~ " ";
     }
     // This has to go after to prevent linker errors
-    build ~= "lib/libserenity.a ";
+    build ~= "-L-lserenity ";
     build ~= buildOpts;
     verbose && writefln(yellow("> " ~ build));
     benforce(system(build) == 0, "bin/serenity.fcgi");
