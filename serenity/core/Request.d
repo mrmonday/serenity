@@ -42,7 +42,7 @@ struct Post
 
     private static Post opCall(InputStream stdin)
     {
-        Post post = void;
+        Post post;
         string  key;
         string  buffer;
         char    tmp;

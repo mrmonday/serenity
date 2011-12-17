@@ -60,7 +60,8 @@ class Home : Controller
         {
             posts ~= Post(0, cast(DateTime)Clock.currTime().toUTC(), request.post["title"], request.post["content"]);
             setResponseCode(303);
-            setHeader("Location", "/~robert/serenity/");
+            // TODO Use some sort of url maker as above.
+            setHeader("Location", "/");
         }
         return form;
     }

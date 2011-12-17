@@ -3,7 +3,6 @@
 </IfModule>
 <IfModule mod_rewrite.c>
 	RewriteEngine on
-    RewriteBase /~robert/serenity/
 	RewriteCond %{SCRIPT_FILENAME} !-d
 	RewriteCond %{SCRIPT_FILENAME} !-f
 	RewriteRule ^(.*)$ serenity.fcgi/$1 [QSA]
