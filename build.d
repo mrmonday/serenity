@@ -113,7 +113,8 @@ class BuildFail : Exception
 void buildSerenity()
 {
     writeln("> Building lib/libserenity.a".green);
-    string build = "/usr/bin/env dmd -oflib/libserenity.a -lib ";
+    version(DMDBug7099Fixed) string build = "/usr/bin/env dmd -oflib/libserenity.a -lib ";
+    else string build = "/usr/bin/env dmd -oflib/libserenity.a -c ";
     foreach (file; serenity)
     {
         build ~= file ~ ' ';
@@ -127,7 +128,8 @@ void buildSerenity()
 void buildPackage(string p)
 {
     writefln("> Building package lib/libserenity-%s.a".green, p);
-    string build = "/usr/bin/env dmd -oflib/libserenity-" ~ p ~ ".a -lib ";
+    version(DMDBug7099Fixed) string build = "/usr/bin/env dmd -oflib/libserenity-" ~ p ~ ".a -lib ";
+    else string build = "/usr/bin/env dmd -oflib/libserenity-" ~ p ~ ".a -c ";
     foreach (file; filter!q{endsWith(a.name, ".d")}(dirEntries(p, SpanMode.depth)))
     {
         build ~= file.name ~ ' ';
