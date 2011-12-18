@@ -1,19 +1,17 @@
 /**
  * Serenity Web Framework Example Plugin
  *
- * models/HomeModel.d: Hello world blog example
+ * views/HomeValidator.d: Hello world blog example
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module example.models.HomeModel;
+module example.validators.HomeValidator;
 
-import example.validators.HomeValidator;
+import serenity.core.Validator;
 
-import serenity.core.Model;
-
-class HomeModel : Model
+class HomeValidator : Validator
 {
     mixin register!(typeof(this));
 }
