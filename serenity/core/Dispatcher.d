@@ -22,16 +22,12 @@ class Dispatcher
         {
             auto controller = Router.match(request.getHeader("PATH_INFO"));
             auto doc = controller.view(request);
-            auto layout = controller.getLayout();
-            doc = layout.layout(controller, doc);
             return new Response(request, controller.getHeaders(), doc, controller.getResponseCode());
         }
         catch (SerenityBaseException e)
         {
             auto controller = Router.getErrorController(e.getCode(), e.msg);
             auto doc = controller.view(request);
-            auto layout = controller.getLayout();
-            doc = layout.layout(controller, doc);
             return new Response(request, controller.getHeaders(), doc, controller.getResponseCode());
         }
         catch (Exception e)
@@ -40,8 +36,6 @@ class Dispatcher
             //e.writeOut((char[] str) { err ~= str; });
             auto controller = Router.getErrorController(500, e.toString());
             auto doc = controller.view(request);
-            auto layout = controller.getLayout();
-            doc = layout.layout(controller, doc);
             return new Response(request, controller.getHeaders(), doc, controller.getResponseCode());
         }
     }

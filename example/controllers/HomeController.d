@@ -21,7 +21,7 @@ struct Post
 
 class HomeController : Controller
 {
-    mixin register!(HomeController);
+    mixin register!(typeof(this));
     Persister!Post posts;
 
     this()

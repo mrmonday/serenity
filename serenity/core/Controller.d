@@ -9,7 +9,6 @@
  */
 module serenity.core.Controller;
 
-import serenity.core.Layout;
 import serenity.core.Log;
 import serenity.core.Util;
 
@@ -80,7 +79,6 @@ abstract class Controller
     private static void*[string][ClassInfo] mControllers;
     private string[] mArguments;
     private string[string] mHeaders;
-    private string mLayout = "Default";
     private string mPlugin;
     private string mTitle;
     private Logger mLog;
@@ -248,28 +246,6 @@ abstract class Controller
     final protected void setTitle(string title)
     {
         mTitle = title;
-    }
-
-    /**
-     * Get the Layout to be used for this request
-     *
-     * Returns:
-     *  Layout to be used
-     */
-    final public Layout getLayout()
-    {
-        return Layout.create(mPlugin, mLayout);
-    }
-
-    /**
-     * Set the layout type to use
-     *
-     * Params:
-     *  name = Name of the layout to use
-     */
-    final protected void setLayout(string name)
-    {
-        mLayout = name;
     }
 
     /**
