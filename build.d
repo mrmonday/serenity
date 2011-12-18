@@ -1,4 +1,4 @@
-#!/usr/bin/env dmd -w -O -inline -run
+#!/usr/bin/env rdmd
 /**
  * Serenity Web Framework
  *
