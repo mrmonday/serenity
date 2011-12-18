@@ -140,32 +140,23 @@ void buildPackage(string p)
     benforce(exists("lib/libserenity-" ~ p ~ ".a"), "lib/libserenity-" ~ p ~ ".a");
 }
 
-void genControllers()
+/**
+ * Generate import files for bootstrap.
+ */
+void genMvcImports()
 {
-    writeln("> Generating controllers.d".green);
-    auto file = File("controllers.d", "w");
-    file.writeln(`// Automatically generated, do not edit by hand`);
-    file.writeln(`module controllers;`);
-    foreach (p; packages)
+    foreach (type; ["models", "views", "controllers"])
     {
-        foreach (f; filter!q{endsWith(a.name, ".d")}(dirEntries(p ~ "/controllers/", SpanMode.shallow)))
+        writeln(green("> Generating " ~ type ~ ".d"));
+        auto file = File(type ~ ".d", "w");
+        file.writeln(`// Automatically generated, do not edit by hand`);
+        file.writeln(`module ` ~ type ~ `;`);
+        foreach (p; packages)
         {
-            file.writefln("import %s.controllers.%s;", p, basename(f.name, ".d"));
-        }
-    }
-}
-
-void genLayouts()
-{
-    writeln("> Generating layouts.d".green);
-    auto file = File("layouts.d", "w");
-    file.writeln(`// Automatically generated, do not edit by hand`);
-    file.writeln(`module layouts;`);
-    foreach (p; packages)
-    {
-        foreach (f; filter!q{endsWith(a.name, ".d")}(dirEntries(p ~ "/layouts/", SpanMode.shallow)))
-        {
-            file.writefln("import %s.layouts.%s;", p, basename(f.name, ".d"));
+            foreach (f; filter!q{endsWith(a.name, ".d")}(dirEntries(p ~ "/" ~ type ~ "/", SpanMode.shallow)))
+            {
+                file.writefln("import %s." ~ type ~ ".%s;", p, basename(f.name, ".d"));
+            }
         }
     }
 }
@@ -173,8 +164,7 @@ void genLayouts()
 void buildBinary()
 {
     enforce(packages.length, "Cannot build a binary with no packages");
-    genControllers();
-    genLayouts();
+    genMvcImports();
     writeln("> Building binary bin/serenity.fcgi".green);
     string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d controllers.d layouts.d -L-Llib ";
     foreach (p; packages)

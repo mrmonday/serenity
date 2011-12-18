@@ -1,13 +1,13 @@
 /**
  * Serenity Web Framework Example Plugin
  *
- * controllers/Home.d: Hello world blog example
+ * controllers/HomeController.d: Hello world blog example
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module example.controllers.Home;
+module example.controllers.HomeController;
 
 import serenity.core.Controller;
 
@@ -19,9 +19,9 @@ struct Post
     string content;
 }
 
-class Home : Controller
+class HomeController : Controller
 {
-    mixin registerController!(Home);
+    mixin register!(HomeController);
     Persister!Post posts;
 
     this()
