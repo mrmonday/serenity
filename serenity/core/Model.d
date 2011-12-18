@@ -9,6 +9,44 @@
  */
 module serenity.core.Model;
 
+public import serenity.core.Request : Post;
+public import serenity.persister.Persister;
+
 abstract class Model
 {
+    /**
+     * Register a class as a model
+     *
+     * Examples:
+     * ----
+     *  class MyModel : Model
+     *  {
+     *      mixin register!(typeof(this));
+     *  }
+     * ----
+     */
+    mixin template register(T : Model)
+    {
+        static if (is(typeof(__traits(parent, __traits(parent, __traits(parent, T))).stringof)))
+        {
+            enum _s_pkg = __traits(parent, __traits(parent, __traits(parent, T))).stringof["package ".length .. $];
+            // TODO This will give an ugly message for classes with names of length < "Model".length
+            enum _s_validator = T.stringof[0 .. $-`Model`.length] ~ `Validator`;
+            static if (is(typeof(mixin(q{import } ~ _s_pkg ~ q{.validators.} ~ _s_validator ~ q{;
+                                        static assert(is(} ~ _s_validator ~ q{ : Validator));}))))
+            {
+                mixin(q{import } ~ _s_pkg ~ q{.validators.} ~ _s_validator ~ q{;} ~
+                        _s_validator ~ q{ validator;});
+            }
+        }
+        static this()
+        {
+            // TODO This could probably (and should probably) be done without a static constructor
+            static if(is(typeof(validator) : Validator))
+            {
+                validator = new typeof(validator);
+            }
+        }
+    }
+
 }

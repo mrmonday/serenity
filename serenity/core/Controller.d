@@ -13,7 +13,6 @@ import serenity.core.Log;
 import serenity.core.Util;
 
 public import serenity.document.HtmlDocument;
-public import serenity.persister.Persister;
 public import serenity.core.Request;
 
 import std.string;
@@ -71,17 +70,48 @@ abstract class Controller
      */
     mixin template register(T : Controller)
     {
+        static if (is(typeof(__traits(parent, __traits(parent, __traits(parent, T))).stringof)))
+        {
+            enum _s_pkg = __traits(parent, __traits(parent, __traits(parent, T))).stringof["package ".length .. $];
+            // TODO This will give an ugly message for classes with names of length < "Controller".length
+            enum _s_model = T.stringof[0 .. $-`Controller`.length] ~ `Model`;
+            static if (is(typeof(mixin(q{import } ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{;
+                                        static assert(is(} ~ _s_model ~ q{ : Model));}))))
+            {
+                mixin(q{import } ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{;} ~
+                        _s_model ~ q{ model;});
+            }
+            enum _s_view = T.stringof[0 .. $-`Controller`.length] ~ `View`;
+            static if (is(typeof(mixin(q{import } ~ _s_pkg ~ q{.views.} ~ _s_view ~ q{;
+                                        static assert(is(} ~ _s_view ~ q{ : View));}))))
+            {
+                mixin(q{import } ~ _s_pkg ~ q{.views.} ~ _s_view ~ q{;} ~
+                        _s_view ~ q{ view;});
+            }
+
+        }
         static this()
         {
+            // TODO This could probably (and should probably) be done without a static constructor
             void*[string] members;
             foreach(member; __traits(derivedMembers, T))
             {
-                static if (member[0..4] == "view")
+                static if (member.length >= 7 && member[0..7] == "display")
                 {
                     mixin(`members["` ~ ctToLower(member) ~ `"] = cast(void*)&` ~ T.stringof ~ '.' ~ member ~ `;`);
                 }
             }
             Controller.registerController(T.classinfo, members);
+            import serenity.core.Model; // TODO this needs to be in a better place
+            static if(is(typeof(model) : Model))
+            {
+                model = new typeof(model);
+            }
+            import serenity.core.View; // TODO this needs to be in a better place
+            static if(is(typeof(view) : View))
+            {
+                view = new typeof(view);
+            }
         }
     }
 

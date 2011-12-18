@@ -34,7 +34,7 @@ class HomeModel : Model
         mArticles.initialize();
     }
 
-    auto articles() @property
+    @property auto articles()
     {
         return posts;
     }

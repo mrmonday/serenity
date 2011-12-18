@@ -9,6 +9,8 @@
  */
 module serenity.core.Validator;
 
+public import serenity.core.Request : Post;
+
 class Validator
 {
 }

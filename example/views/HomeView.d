@@ -9,12 +9,14 @@
  */
 module example.views.HomeView;
 
+// TODO Can this import be factored out?
+import example.models.HomeModel : Article;
+
 import serenity.core.View;
+import serenity.document.HtmlDocument;
 
 class HomeView : View
 {
-    mixin register!(typeof(this));
-
     void displayArticle(HtmlDocument doc, Article p)
     {
         with (doc.article)
