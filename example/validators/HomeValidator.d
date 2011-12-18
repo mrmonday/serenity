@@ -14,4 +14,14 @@ import serenity.core.Validator;
 class HomeValidator : Validator
 {
     mixin register!(typeof(this));
+
+    auto validate(Post p)
+    {
+        auto title = require(p, "title");
+        auto content = optional(p, "content");
+
+        title.maxLength = 255;
+
+        return populate!Article();
+    }
 }

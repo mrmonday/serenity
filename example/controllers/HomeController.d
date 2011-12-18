@@ -11,57 +11,41 @@ module example.controllers.HomeController;
 
 import serenity.core.Controller;
 
-struct Post
-{
-    ulong id;
-    DateTime time;
-    string title;
-    string content;
-}
-
 class HomeController : Controller
 {
     mixin register!(typeof(this));
-    Persister!Post posts;
 
-    this()
-    {
-        posts = new Persister!Post;
-        posts.initialize();
-    }
-
-    HtmlDocument viewDefault(Request, string[] args)
+    auto displayDefault(Request, string[] args)
     {
         setTitle("Home controller");
 
         auto doc = new HtmlDocument;
-        foreach (post; posts[$..$-10])
+        foreach (article; model.articles[$..$-10])
         {
             log.info("adding article");
-            with (doc.article)
-            {
-                h2.a.attr("href", "/example/view"/*makeUrl("view", post.id)*/).content = post.title;
-                time.content = post.time.toSimpleString();
-                p.content = post.content;
-            }
+            view.displayArticle(doc, article);
+
         }
         return doc;
     }
 
-    HtmlDocument viewAddPost(Request request, string[])
+    auto displayAddPost(Request request, string[])
     {
         setTitle("Add post");
 
         auto form = request.post.form(request.getHeader("REQUEST_URI"));
-        form.text("Title", "title").validateLength(1, 255);
-        form.textArea("Content", "content").validateLength(1, size_t.max);
-        form.submit(null, null, "Add post");
-        if (form.validate())
+        if (request.hasPostData())
         {
-            posts ~= Post(0, cast(DateTime)Clock.currTime().toUTC(), request.post["title"], request.post["content"]);
+            // TODO Error handling
+            model.addPost(request.postData());
+            
+            // TODO Need a redirect method, and a url maker
             setResponseCode(303);
-            // TODO Use some sort of url maker as above.
             setHeader("Location", "/");
+        }
+        else
+        {
+            view.displayAddArticle();
         }
         return form;
     }

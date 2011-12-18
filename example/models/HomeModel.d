@@ -13,7 +13,36 @@ import example.validators.HomeValidator;
 
 import serenity.core.Model;
 
+struct Article
+{
+    ulong id;
+    DateTime time;
+    string title;
+    string content;
+}
+
 class HomeModel : Model
 {
     mixin register!(typeof(this));
+
+    private Persister!Article mArticless;
+
+    this()
+    {
+        mArticles = new Persister!Post;
+        // TODO This needs doing properly.
+        mArticles.initialize();
+    }
+
+    auto articles() @property
+    {
+        return posts;
+    }
+
+    auto addArticle(Post p)
+    {
+        auto article = validator.validate(p);
+        article.time = cast(DateTime)Clock.currTime().toUTC();
+        mArticles ~= article;
+    }
 }
