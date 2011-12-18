@@ -33,33 +33,6 @@ string ctToLower(string str) pure
 }
 
 /**
- * Register a class as a controller
- *
- * Examples:
- * ----
- *  class MyController : Controller
- *  {
- *      mixin registerController!(MyController);
- *  }
- * ----
- */
-mixin template registerController(T : Controller)
-{
-    static this()
-    {
-        void*[string] members;
-        foreach(member; __traits(derivedMembers, T))
-        {
-            static if (member[0..4] == "view")
-            {
-                mixin(`members["` ~ ctToLower(member) ~ `"] = cast(void*)&` ~ T.stringof ~ '.' ~ member ~ `;`);
-            }
-        }
-        Controller.register(T.classinfo, members);
-    }
-}
-
-/**
  * Thrown when Controller not found
  */
 mixin SerenityException!("ControllerNotFound", "404");
@@ -84,6 +57,33 @@ abstract class Controller
     private Logger mLog;
     private ushort mResponseCode = 200;
     private string mViewMethod = "viewdefault";
+
+    /**
+     * Register a class as a controller
+     *
+     * Examples:
+     * ----
+     *  class MyController : Controller
+     *  {
+     *      mixin register!(typeof(this));
+     *  }
+     * ----
+     */
+    mixin template register(T : Controller)
+    {
+        static this()
+        {
+            void*[string] members;
+            foreach(member; __traits(derivedMembers, T))
+            {
+                static if (member[0..4] == "view")
+                {
+                    mixin(`members["` ~ ctToLower(member) ~ `"] = cast(void*)&` ~ T.stringof ~ '.' ~ member ~ `;`);
+                }
+            }
+            Controller.registerController(T.classinfo, members);
+        }
+    }
 
     /**
      * Create an instance of the given controller
@@ -172,7 +172,7 @@ abstract class Controller
      *  InvalidControllerException when the given controller does not extend
      *  Controller
      */
-    public static void register(ClassInfo ci, void*[string] methods)
+    public static void registerController(ClassInfo ci, void*[string] methods)
     {
         mControllers[ci] = methods;
     }

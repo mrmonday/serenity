@@ -1,19 +1,19 @@
 /**
  * Serenity Web Framework Example Plugin
  *
- * controllers/Error.d: Handles error requests
+ * controllers/ErrorController.d: Handles error requests
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module example.controllers.Error;
+module example.controllers.ErrorController;
 
 import serenity.core.Controller;
 
-class Error : Controller
+class ErrorController : Controller
 {
-    mixin registerController!Error;
+    mixin register!(typeof(this));
 
     HtmlDocument viewDefault(Request request, string[] args)
     {
