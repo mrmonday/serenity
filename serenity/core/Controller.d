@@ -78,15 +78,15 @@ abstract class Controller
             static if (is(typeof(mixin(q{import } ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{;
                                         static assert(is(} ~ _s_model ~ q{ : Model));}))))
             {
-                mixin(q{import } ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{;} ~
-                        _s_model ~ q{ model;});
+                mixin(q{import } ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{;
+                        protected } ~ _s_model ~ q{ model;});
             }
             enum _s_view = T.stringof[0 .. $-`Controller`.length] ~ `View`;
             static if (is(typeof(mixin(q{import } ~ _s_pkg ~ q{.views.} ~ _s_view ~ q{;
                                         static assert(is(} ~ _s_view ~ q{ : View));}))))
             {
-                mixin(q{import } ~ _s_pkg ~ q{.views.} ~ _s_view ~ q{;} ~
-                        _s_view ~ q{ view;});
+                mixin(q{import } ~ _s_pkg ~ q{.views.} ~ _s_view ~ q{;
+                        protected } ~  _s_view ~ q{ view;});
             }
 
         }
@@ -98,7 +98,7 @@ abstract class Controller
             {
                 static if (member.length >= 7 && member[0..7] == "display")
                 {
-                    mixin(`members["` ~ ctToLower(member) ~ `"] = cast(void*)&` ~ T.stringof ~ '.' ~ member ~ `;`);
+                    mixin(`members["` ~ ctToLower(member) ~ `"] = cast(void*)&` ~ T.stringof ~ `.` ~ member ~ `;`);
                 }
             }
             Controller.registerController(T.classinfo, members);

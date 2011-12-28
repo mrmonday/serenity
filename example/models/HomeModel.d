@@ -25,7 +25,7 @@ class HomeModel : Model
 {
     mixin register!(typeof(this));
 
-    private Persister!Article mArticless;
+    private Persister!Article mArticles;
 
     this()
     {

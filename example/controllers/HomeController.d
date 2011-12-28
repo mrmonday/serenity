@@ -15,7 +15,8 @@ class HomeController : Controller
 {
     mixin register!(typeof(this));
 
-    auto displayDefault(Request, string[] args)
+    // TODO Switch back to auto when dmd bug #7159 is fixed
+    HtmlDocument displayDefault(Request, string[] args)
     {
         setTitle("Home controller");
 
@@ -29,11 +30,10 @@ class HomeController : Controller
         return doc;
     }
 
-    auto displayAddPost(Request request, string[])
+    HtmlDocument displayAddPost(Request request, string[])
     {
         setTitle("Add post");
 
-        auto form = request.post.form(request.getHeader("REQUEST_URI"));
         if (request.hasPostData())
         {
             // TODO Error handling

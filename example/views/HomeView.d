@@ -17,14 +17,12 @@ import serenity.document.HtmlDocument;
 
 class HomeView : View
 {
-    void displayArticle(HtmlDocument doc, Article p)
+    void displayArticle(HtmlDocument doc, Article article)
     {
-        with (doc.article)
-        {
-            h2.a.attr("href", "/example/view"/*makeUrl("view", post.id)*/).content = post.title;
-            time.content = post.time.toSimpleString();
-            p.content = post.content;
-        }
+        auto a = doc.article;
+        a.h2.a.attr("href", "/example/view"/*makeUrl("view", post.id)*/).content = article.title;
+        a.time.content = article.time.toSimpleString();
+        a.p.content = article.content;
     }
 
     void displayAddArticles(HtmlDocument doc)
@@ -35,8 +33,8 @@ class HomeView : View
                             // TODO Fix action URL
                             .attr("action", "example/Home/addpost");
         auto title = form.p;
-        p.label.attr("for", "title").content = "Title";
-        p.input.attr("id", "title")
+        form.label.attr("for", "title").content = "Title";
+        form.input.attr("id", "title")
                .attr("name", "title")
                .attr("type", "text");
         auto content = form.p;
