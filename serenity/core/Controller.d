@@ -75,15 +75,19 @@ abstract class Controller
             enum _s_pkg = __traits(parent, __traits(parent, __traits(parent, T))).stringof["package ".length .. $];
             // TODO This will give an ugly message for classes with names of length < "Controller".length
             enum _s_model = T.stringof[0 .. $-`Controller`.length] ~ `Model`;
-            static if (is(typeof(mixin(q{import } ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{;
-                                        static assert(is(} ~ _s_model ~ q{ : Model));}))))
+            static if (mixin(q{is(} ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{.} ~ _s_model ~ q{ : serenity.core.Model.Model)}))
             {
+/*mixin(q{
+                                        static assert(is(} ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{.} ~ _s_model ~ q{ : serenity.core.Model.Model));}
+                                        );
+
+                pragma(msg, "foobar");*/
                 mixin(q{import } ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{;
                         protected } ~ _s_model ~ q{ model;});
             }
+
             enum _s_view = T.stringof[0 .. $-`Controller`.length] ~ `View`;
-            static if (is(typeof(mixin(q{import } ~ _s_pkg ~ q{.views.} ~ _s_view ~ q{;
-                                        static assert(is(} ~ _s_view ~ q{ : View));}))))
+            static if (mixin(q{is(} ~ _s_pkg ~ q{.views.} ~ _s_view ~ q{.} ~ _s_view ~ q{ : serenity.core.View.View)}))
             {
                 mixin(q{import } ~ _s_pkg ~ q{.views.} ~ _s_view ~ q{;
                         protected } ~  _s_view ~ q{ view;});

@@ -79,7 +79,7 @@ struct Dollar
 /**
  * Return an instance of the Dollar struct for manipulation
  */
-Dollar __dollar()
+public Dollar __dollar()
 {
     return Dollar();
 }

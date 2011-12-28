@@ -37,7 +37,7 @@ class HomeController : Controller
         if (request.hasPostData())
         {
             // TODO Error handling
-            model.addPost(request.postData());
+            model.addArticle(request.postData());
             
             // TODO Need a redirect method, and a url maker
             setResponseCode(303);
@@ -45,8 +45,7 @@ class HomeController : Controller
         }
         else
         {
-            view.displayAddArticle();
+            return view.displayAddArticle(new HtmlDocument);
         }
-        return form;
     }
 }

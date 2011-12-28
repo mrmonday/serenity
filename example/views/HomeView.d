@@ -25,7 +25,7 @@ class HomeView : View
         a.p.content = article.content;
     }
 
-    void displayAddArticles(HtmlDocument doc)
+    void displayAddArticle(HtmlDocument doc)
     {
         // TODO This needs to be nicer...
         //      One step at a time though.

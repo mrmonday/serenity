@@ -36,7 +36,7 @@ class HomeModel : Model
 
     @property auto articles()
     {
-        return posts;
+        return mArticles;
     }
 
     auto addArticle(Post p)
