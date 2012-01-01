@@ -32,11 +32,12 @@ class HomeController : Controller
     HtmlDocument displayAddPost(Request request, string[])
     {
         setTitle("Add post");
+        auto doc = new HtmlDocument;
 
-        if (request.hasPostData())
+        if (auto postData = request.postData)
         {
             // TODO Error handling
-            model.addArticle(request.postData());
+            model.addArticle(postData);
             
             // TODO Need a redirect method, and a url maker
             setResponseCode(303);
@@ -44,7 +45,8 @@ class HomeController : Controller
         }
         else
         {
-            return view.displayAddArticle(new HtmlDocument);
+            view.displayAddArticle(doc);
         }
+        return doc;
     }
 }

@@ -42,7 +42,7 @@ class HomeModel : Model
         return mArticles;
     }
 
-    auto addArticle(Post p)
+    auto addArticle(string[string] p)
     {
         auto article = validator.validate(p);
         article.time = cast(DateTime)Clock.currTime().toUTC();

@@ -4,7 +4,7 @@
  * core/Request.d: Represents a request
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module serenity.core.Request;
@@ -36,13 +36,26 @@ static this()
 
 mixin SerenityException!("Request");
 
-struct Post
+class Request
 {
-    private string[string] mArgs;
-
-    private static Post opCall(InputStream stdin)
+    public enum Protocol
     {
-        Post post;
+        Http  = 1,   // http
+        Https = 2,   // https
+        Cli   = 4    // command line
+    }
+    public enum Method
+    {
+        Options, Get, Head, Post,
+        Put, Delete, Trace, Connect
+    }
+    private string[string] mArgs;
+    private Method         mMethod   = Method.Get;
+    private string[string] mPost;
+    private Protocol       mProtocol = Protocol.Cli;
+
+    private void parsePostData(InputStream stdin)
+    {
         string  key;
         string  buffer;
         char    tmp;
@@ -55,7 +68,7 @@ struct Post
                     buffer ~= ' ';
                     break;
                 case '&':
-                    post.mArgs[key] = buffer;
+                    mPost[key] = buffer;
                     buffer = null;
                     break;
                 case '%':
@@ -84,38 +97,8 @@ struct Post
                     break;
             }
         }
-        post.mArgs[key] = buffer;
-        return post;
+        mPost[key] = buffer;
     }
-   
-    public string opIndex(string name)
-    {
-        return mArgs[name];
-    }
-
-    public Form form(string action)
-    {
-        return new Form(Form.Method.Post, action, mArgs);
-    }
-}
-
-class Request
-{
-    public enum Protocol
-    {
-        Http  = 1,   // http
-        Https = 2,   // https
-        Cli   = 4    // command line
-    }
-    public enum Method
-    {
-        Options, Get, Head, Post,
-        Put, Delete, Trace, Connect
-    }
-    private string[string] mArgs;
-    private Method    mMethod   = Method.Get;
-    private Post      mPost;
-    private Protocol  mProtocol = Protocol.Cli;
 
     /**
      * Construct a new request
@@ -138,7 +121,7 @@ class Request
         }
         if (mMethod == Method.Post || mMethod == Method.Put)
         {
-            mPost = Post(stdin);
+            parsePostData(stdin);
         }
         // TODO Parse args properly
         if (mProtocol == Protocol.Cli && cliArgs.length > 1)
@@ -188,7 +171,7 @@ class Request
      * Returns:
      *  A Post struct with the data for this request
      */
-    public Post post()
+    public string[string] postData()
     {
         return mPost;
     }
