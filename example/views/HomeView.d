@@ -4,13 +4,14 @@
  * views/HomeView.d: Hello world blog example
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module example.views.HomeView;
 
 // TODO Can this import be factored out?
-import example.models.HomeModel : Article;
+// NOTE Only need Article from here, dmd bug #314 causes issues though
+import example.models.HomeModel;
 
 import serenity.core.View;
 import serenity.document.HtmlDocument;

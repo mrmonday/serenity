@@ -4,7 +4,7 @@
  * controllers/HomeController.d: Hello world blog example
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module example.controllers.HomeController;
@@ -21,11 +21,10 @@ class HomeController : Controller
         setTitle("Home controller");
 
         auto doc = new HtmlDocument;
-        foreach (article; model.articles[$..$-10])
+        foreach (Article article; model.articles[$..$-10])
         {
             log.info("adding article");
             view.displayArticle(doc, article);
-
         }
         return doc;
     }
