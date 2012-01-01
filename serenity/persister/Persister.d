@@ -48,7 +48,8 @@ alias uint Constraint;
  * Standard array overloads should also be implemented, they may be implemented
  * as templates however, so are not included here.
  */
-interface IPersister(T, Backend) if (canPersist!T && is(T == struct) && T.tupleof.length > 0)
+// DMDBug7190: T.sizeof can be removed.
+interface IPersister(T, Backend) if (T.sizeof && canPersist!T && is(T == struct) && T.tupleof.length > 0)
 {
     /// Intialize the persister for first time usage
     void initialize();
