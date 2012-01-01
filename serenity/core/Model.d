@@ -28,14 +28,14 @@ abstract class Model
     {
         static if (is(typeof(__traits(parent, __traits(parent, __traits(parent, T))).stringof)))
         {
+            // TODO This should probably be unified with Controller.register
             enum _s_pkg = __traits(parent, __traits(parent, __traits(parent, T))).stringof["package ".length .. $];
             // TODO This will give an ugly message for classes with names of length < "Model".length
             enum _s_validator = T.stringof[0 .. $-`Model`.length] ~ `Validator`;
-            static if (is(typeof(mixin(q{import } ~ _s_pkg ~ q{.validators.} ~ _s_validator ~ q{;
-                                        static assert(is(} ~ _s_validator ~ q{ : Validator));}))))
+            static if (mixin(q{is(} ~ _s_pkg ~ q{.validators.} ~ _s_validator ~ q{.} ~ _s_validator ~ q{ : serenity.core.Validator.Validator)}))
             {
-                mixin(q{import } ~ _s_pkg ~ q{.validators.} ~ _s_validator ~ q{;} ~
-                        _s_validator ~ q{ validator;});
+                mixin(q{import } ~ _s_pkg ~ q{.validators.} ~ _s_validator ~ q{;
+                        protected } ~ _s_validator ~ q{ validator;});
             }
         }
         static this()
