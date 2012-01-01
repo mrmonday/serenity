@@ -77,11 +77,6 @@ abstract class Controller
             enum _s_model = T.stringof[0 .. $-`Controller`.length] ~ `Model`;
             static if (mixin(q{is(} ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{.} ~ _s_model ~ q{ : serenity.core.Model.Model)}))
             {
-/*mixin(q{
-                                        static assert(is(} ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{.} ~ _s_model ~ q{ : serenity.core.Model.Model));}
-                                        );
-
-                pragma(msg, "foobar");*/
                 mixin(q{import } ~ _s_pkg ~ q{.models.} ~ _s_model ~ q{;
                         protected } ~ _s_model ~ q{ model;});
             }

@@ -4,7 +4,7 @@
  * models/HomeModel.d: Hello world blog example
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module example.models.HomeModel;
@@ -12,6 +12,9 @@ module example.models.HomeModel;
 import example.validators.HomeValidator;
 
 import serenity.core.Model;
+
+// TODO Remove this once we've switched to opDollar
+public import serenity.core.Model : __dollar;
 
 struct Article
 {
