@@ -11,15 +11,17 @@ module example.validators.HomeValidator;
 
 import serenity.core.Validator;
 
+import example.models.HomeModel;
+
 class HomeValidator : Validator
 {
     auto validate(string[string] p)
     {
-        auto title = require(p, "title");
-        auto content = optional(p, "content");
+        auto title = require("title");
+        auto content = optional("content");
 
         title.maxLength = 255;
 
-        return populate!Article();
+        return populate!Article(p);
     }
 }

@@ -32,7 +32,7 @@ class HomeModel : Model
 
     this()
     {
-        mArticles = new Persister!Post;
+        mArticles = new Persister!Article;
         // TODO This needs doing properly.
         mArticles.initialize();
     }

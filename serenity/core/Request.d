@@ -171,7 +171,7 @@ class Request
      * Returns:
      *  A Post struct with the data for this request
      */
-    public string[string] postData()
+    public string[string] postData() @property
     {
         return mPost;
     }

@@ -41,7 +41,7 @@ abstract class Model
         static this()
         {
             // TODO This could probably (and should probably) be done without a static constructor
-            static if(is(typeof(validator) : Validator))
+            static if(is(typeof(validator) : serenity.core.Validator.Validator))
             {
                 validator = new typeof(validator);
             }
