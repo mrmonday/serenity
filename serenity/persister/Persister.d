@@ -66,6 +66,7 @@ interface IPersister(T, Backend) if (T.sizeof && canPersist!T && is(T == struct)
  * Represent an index for slicing and indexing.
  *
  * TODO Remove this once opDollar is implemented
+ * NOTE This is implemented now, but due to regressions in dmd 2.057 cannot be used.
  */
 struct Dollar
 {
