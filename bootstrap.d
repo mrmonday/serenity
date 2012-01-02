@@ -13,9 +13,8 @@ import serenity.core.Serenity;
 import serenity.persister.backend.Sqlite;
 import serenity.persister.Sqlite;
 
-import models;
-import views;
-import controllers;
+/// This is required to make sure static constructors and unittests run
+import mvc;
 
 int main(string[] args)
 {

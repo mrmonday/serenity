@@ -147,12 +147,13 @@ void buildPackage(string p)
  */
 void genMvcImports()
 {
+    writeln(green("> Generating mvc.d"));
+    auto file = File("mvc.d", "w");
+    file.writeln(`// Automatically generated, do not edit by hand`);
+    file.writeln(`module mvc;`);
     foreach (type; ["models", "views", "controllers"])
     {
-        writeln(green("> Generating " ~ type ~ ".d"));
-        auto file = File(type ~ ".d", "w");
-        file.writeln(`// Automatically generated, do not edit by hand`);
-        file.writeln(`module ` ~ type ~ `;`);
+        file.writefln("// " ~ type);
         foreach (p; packages)
         {
             foreach (f; filter!q{endsWith(a.name, ".d")}(dirEntries(p ~ "/" ~ type ~ "/", SpanMode.shallow)))
@@ -160,6 +161,7 @@ void genMvcImports()
                 file.writefln("import %s." ~ type ~ ".%s;", p, basename(f.name, ".d"));
             }
         }
+        file.writeln();
     }
 }
 
@@ -168,7 +170,7 @@ void buildBinary()
     enforce(packages.length, "Cannot build a binary with no packages");
     genMvcImports();
     writeln("> Building binary bin/serenity.fcgi".green);
-    string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d models.d views.d controllers.d -L-Llib ";
+    string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d mvc.d -L-Llib ";
     foreach (p; packages)
     {
         build ~= "-L-lserenity-" ~ p ~ " ";
@@ -289,7 +291,7 @@ int main(string[] args)
         {
             removeLoopBody(f.name);
         }
-        foreach (f; ["controllers.d", "layouts.d", "bin/serenity.fcgi"])
+        foreach (f; ["mvc.d", "bin/serenity.fcgi"])
         {
             removeLoopBody(f);
         }

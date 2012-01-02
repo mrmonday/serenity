@@ -1,5 +1,4 @@
-controllers.d
-layouts.d
+mvc.d
 *.fcgi
 *.swp
 *.swo
