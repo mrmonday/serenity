@@ -98,7 +98,7 @@ abstract class Controller
                 _scft[string] members;
                 foreach(member; __traits(derivedMembers, T))
                 {
-                    static if (member.length >= 7 && member[0..7] == "display")
+                    static if (member.length >= "display".length && member[0 .. "display".length] == "display")
                     {
                         mixin(`members["` ~ ctToLower(member) ~ `"] = &` ~ T.stringof ~ `.` ~ member ~ `;`);
                     }

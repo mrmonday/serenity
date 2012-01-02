@@ -4,7 +4,7 @@
  * controllers/ErrorController.d: Handles error requests
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module example.controllers.ErrorController;
@@ -15,7 +15,7 @@ class ErrorController : Controller
 {
     mixin register!(typeof(this));
 
-    HtmlDocument viewDefault(Request request, string[] args)
+    HtmlDocument displayDefault(Request request, string[] args)
     {
         setTitle("Error");
         log.error(args[0]);
