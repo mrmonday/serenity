@@ -153,7 +153,7 @@ abstract class Controller
         controller.mArguments = args;
         controller.mHeaders["Content-Type"] = "text/html; charset=utf-8";
         controller.mPlugin = plugin;
-        controller.mViewMethod = "view" ~ toLower(action);
+        controller.mViewMethod = "display" ~ toLower(action);
         controller.setResponseCode(code);
         return controller;
     }
@@ -170,7 +170,7 @@ abstract class Controller
      */
     public static bool exists(string plugin, string subClass, string action="default")
     {
-        string cname = plugin ~ ".controllers." ~ subClass ~ '.' ~ subClass;
+        string cname = plugin ~ ".controllers." ~ subClass ~ "Controller." ~ subClass ~ "Controller";
         auto registered = ClassInfo.find(cname);
         auto ptr = registered in mControllers;
         if (registered is null || ptr is null)
@@ -179,7 +179,7 @@ abstract class Controller
         }
         foreach (name, func; *ptr)
         {
-            if (name[4..$] == action)
+            if (name["display".length .. $] == action)
             {
                 return true;
             }
