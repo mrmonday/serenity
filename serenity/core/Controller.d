@@ -144,7 +144,7 @@ abstract class Controller
      */
     public static Controller create(string plugin, string subClass, string action=null, string[] args=null, ushort code=200)
     {
-        string cname = plugin ~ ".controllers." ~ subClass ~ '.' ~ subClass;
+        string cname = plugin ~ ".controllers." ~ subClass ~ "Controller." ~ subClass ~ "Controller";
         auto registered = ClassInfo.find(cname);
         if (registered is null || registered !in mControllers)
         {
