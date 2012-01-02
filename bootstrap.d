@@ -4,7 +4,7 @@
  * bootstrap.d: Bootstrap the framework for this applications
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module bootstrap;
@@ -13,8 +13,9 @@ import serenity.core.Serenity;
 import serenity.persister.backend.Sqlite;
 import serenity.persister.Sqlite;
 
+import models;
+import views;
 import controllers;
-import layouts;
 
 int main(string[] args)
 {

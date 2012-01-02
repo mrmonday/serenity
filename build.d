@@ -5,7 +5,7 @@
  * build.d: Build applications based on Serenity
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2011, 2012 Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 
@@ -168,7 +168,7 @@ void buildBinary()
     enforce(packages.length, "Cannot build a binary with no packages");
     genMvcImports();
     writeln("> Building binary bin/serenity.fcgi".green);
-    string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d controllers.d layouts.d -L-Llib ";
+    string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d models.d views.d controllers.d -L-Llib ";
     foreach (p; packages)
     {
         build ~= "-L-lserenity-" ~ p ~ " ";
