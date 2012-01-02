@@ -184,12 +184,13 @@ void buildBinary()
 
 int main(string[] args)
 {
-    bool buildBin = true;
+    bool buildBin = true, parallelBuild = true;
     bool clean, exit, release;
     string remote = null, remoteDir = null;
     getopt(args,
             "r|release", &release,
             "no-binary", { buildBin = false; },
+            "no-parallel", { parallelBuild = false; },
             "enable-backend", (string, string backend)
                               {
                                     // TODO should probably be case insensitive
@@ -221,6 +222,7 @@ int main(string[] args)
                         writeln("   --remote-dir=<directory>        specify the directory to install to");
                         writeln("   --help                          print this help message");
                         writeln("   --clean                         clean the build");
+                        writeln("   --no-parallel                   perform a single build task at a time");
                         writeln("   --verbose                       print commands as they are run");
                         exit = true;
                     },
@@ -322,13 +324,24 @@ int main(string[] args)
 
     try
     {
-        auto t = task!buildSerenity();
-        taskPool.put(t);
-        foreach (p; parallel(packages))
+        if (parallelBuild)
         {
-            buildPackage(p);
+            auto t = task!buildSerenity();
+            taskPool.put(t);
+            foreach (p; parallel(packages))
+            {
+                buildPackage(p);
+            }
+            t.yieldForce();
         }
-        t.yieldForce();
+        else
+        {
+            buildSerenity();
+            foreach (p; packages)
+            {
+                buildPackage(p);
+            }
+        }
         if (buildBin)
         {
             buildBinary();
