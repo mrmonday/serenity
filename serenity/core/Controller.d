@@ -367,6 +367,6 @@ abstract class Controller
                 return dg(request, mArguments);
             }
         }
-        throw new ControllerNotFoundException("Action not found: " ~ mViewMethod[4..$]);
+        throw new ControllerNotFoundException("Action not found: " ~ mViewMethod["display".length .. $]);
     }
 }
