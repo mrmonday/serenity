@@ -361,7 +361,10 @@ abstract class Controller
             if (name == mViewMethod)
             {
                 if (log.info) log.info("Calling method HtmlDocument %s(Request, string[]) @ %#x", mViewMethod, ptr);
-                return ptr(request, mArguments);
+                Document delegate(Request, string[]) dg;
+                dg.ptr = cast(void*)this;
+                dg.funcptr = cast(typeof(dg.funcptr))ptr;
+                return dg(request, mArguments);
             }
         }
         throw new ControllerNotFoundException("Action not found: " ~ mViewMethod[4..$]);
