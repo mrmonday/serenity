@@ -4,7 +4,7 @@
  * core/Controller.d: Provides a base class for controllers
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012 Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module serenity.core.Controller;
@@ -36,6 +36,8 @@ string ctToLower(string str) pure
  */
 mixin SerenityException!("ControllerNotFound", "404");
 
+alias HtmlDocument delegate(Request, string[]) dg;
+
 /**
  * Thrown when the specified Controller is not derived from Controller
  */
@@ -48,7 +50,7 @@ mixin SerenityException!("InvalidController");
  */
 abstract class Controller
 {
-    private static void*[string][ClassInfo] mControllers;
+    private static dg[string][ClassInfo] mControllers;
     private string[] mArguments;
     private string[string] mHeaders;
     private string mPlugin;
@@ -89,27 +91,36 @@ abstract class Controller
             }
 
         }
-        static this()
+        this()
         {
             // TODO This could probably (and should probably) be done without a static constructor
-            void*[string] members;
-            foreach(member; __traits(derivedMembers, T))
+            dg[string] _s_ctGetMembers()
             {
-                static if (member.length >= 7 && member[0..7] == "display")
+                dg[string] members;
+                foreach(member; __traits(derivedMembers, T))
                 {
-                    mixin(`members["` ~ ctToLower(member) ~ `"] = cast(void*)&` ~ T.stringof ~ `.` ~ member ~ `;`);
+                    static if (member.length >= 7 && member[0..7] == "display")
+                    {
+                        mixin(`members["` ~ ctToLower(member) ~ `"] = &` ~ T.stringof ~ `.` ~ member ~ `;`);
+                    }
                 }
+                return members;
             }
-            Controller.registerController(T.classinfo, members);
-            import serenity.core.Model; // TODO this needs to be in a better place
-            static if(is(typeof(model) : Model))
+            enum _s_members = _s_ctGetMembers();
+            Controller.registerController(T.classinfo, _s_members, true);
+            static if(is(typeof(model) : serenity.core.Model.Model))
             {
                 model = new typeof(model);
             }
-            import serenity.core.View; // TODO this needs to be in a better place
-            static if(is(typeof(view) : View))
+            static if(is(typeof(view) : serenity.core.View.View))
             {
                 view = new typeof(view);
+            }
+            // Call an initialize method if there is one...
+            // This is only needed as we're stealing usage of the default constructor
+            static if (is(typeof(initialize())))
+            {
+                initialize();
             }
         }
     }
@@ -186,7 +197,7 @@ abstract class Controller
      * Returns:
      *  An array of all valid view methods
      */
-    private static void*[string] getViewMethods(ClassInfo ci)
+    private static dg[string] getViewMethods(ClassInfo ci)
     {
         return mControllers[ci];
     }
@@ -201,9 +212,10 @@ abstract class Controller
      *  InvalidControllerException when the given controller does not extend
      *  Controller
      */
-    public static void registerController(ClassInfo ci, void*[string] methods)
+    public static void registerController(ClassInfo ci, dg[string] methods, bool automatic=false)
     {
-        mControllers[ci] = methods;
+        if (!automatic || ci !in mControllers)
+            mControllers[ci] = methods;
     }
 
     /**
@@ -348,10 +360,7 @@ abstract class Controller
             if (name == mViewMethod)
             {
                 if (log.info) log.info("Calling method HtmlDocument %s(Request, string[]) @ %#x", mViewMethod, ptr);
-                Document delegate(Request, string[]) dg;
-                dg.ptr = cast(void*)this;
-                dg.funcptr = cast(typeof(dg.funcptr))ptr;
-                return dg(request, mArguments);
+                return ptr(request, mArguments);
             }
         }
         throw new ControllerNotFoundException("Action not found: " ~ mViewMethod[4..$]);

@@ -38,12 +38,18 @@ abstract class Model
                         protected } ~ _s_validator ~ q{ validator;});
             }
         }
-        static this()
+        this()
         {
             // TODO This could probably (and should probably) be done without a static constructor
             static if(is(typeof(validator) : serenity.core.Validator.Validator))
             {
                 validator = new typeof(validator);
+            }
+            // Call an initialize method if there is one...
+            // This is only needed as we're stealing usage of the default constructor
+            static if (is(typeof(initialize())))
+            {
+                initialize();
             }
         }
     }
