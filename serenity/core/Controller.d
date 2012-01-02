@@ -36,7 +36,7 @@ string ctToLower(string str) pure
  */
 mixin SerenityException!("ControllerNotFound", "404");
 
-alias HtmlDocument delegate(Request, string[]) dg;
+private alias HtmlDocument function(Request, string[]) _scft;
 
 /**
  * Thrown when the specified Controller is not derived from Controller
@@ -50,7 +50,7 @@ mixin SerenityException!("InvalidController");
  */
 abstract class Controller
 {
-    private static dg[string][ClassInfo] mControllers;
+    private static _scft[string][ClassInfo] mControllers;
     private string[] mArguments;
     private string[string] mHeaders;
     private string mPlugin;
@@ -91,12 +91,11 @@ abstract class Controller
             }
 
         }
-        this()
+        static this()
         {
-            // TODO This could probably (and should probably) be done without a static constructor
-            dg[string] _s_ctGetMembers()
+            _scft[string] _s_ctGetMembers()
             {
-                dg[string] members;
+                _scft[string] members;
                 foreach(member; __traits(derivedMembers, T))
                 {
                     static if (member.length >= 7 && member[0..7] == "display")
@@ -107,7 +106,10 @@ abstract class Controller
                 return members;
             }
             enum _s_members = _s_ctGetMembers();
-            Controller.registerController(T.classinfo, _s_members, true);
+            Controller.registerController(T.classinfo, _s_members);
+        }
+        this()
+        {
             static if(is(typeof(model) : serenity.core.Model.Model))
             {
                 model = new typeof(model);
@@ -197,7 +199,7 @@ abstract class Controller
      * Returns:
      *  An array of all valid view methods
      */
-    private static dg[string] getViewMethods(ClassInfo ci)
+    private static _scft[string] getViewMethods(ClassInfo ci)
     {
         return mControllers[ci];
     }
@@ -212,10 +214,9 @@ abstract class Controller
      *  InvalidControllerException when the given controller does not extend
      *  Controller
      */
-    public static void registerController(ClassInfo ci, dg[string] methods, bool automatic=false)
+    public static void registerController(ClassInfo ci, _scft[string] methods)
     {
-        if (!automatic || ci !in mControllers)
-            mControllers[ci] = methods;
+        mControllers[ci] = methods;
     }
 
     /**
