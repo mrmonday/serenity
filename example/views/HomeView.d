@@ -26,13 +26,14 @@ class HomeView : View
         a.p.content = article.content;
     }
 
-    void displayAddArticle(HtmlDocument doc)
+    void displayAddArticle(HtmlDocument doc, string url)
     {
         // TODO This needs to be nicer...
         //      One step at a time though.
+        //      Any sort of form handling should automaticaly add in the url
         auto form = doc.form.attr("method", "post")
                             // TODO Fix action URL
-                            .attr("action", "example/Home/addpost");
+                            .attr("action", url);
         auto title = form.p;
         form.label.attr("for", "title").content = "Title";
         form.input.attr("id", "title")

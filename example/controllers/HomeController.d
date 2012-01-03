@@ -23,7 +23,6 @@ class HomeController : Controller
         auto doc = new HtmlDocument;
         foreach (Article article; model.articles[$..$-10])
         {
-            log.info("adding article");
             view.displayArticle(doc, article);
         }
         return doc;
@@ -45,7 +44,7 @@ class HomeController : Controller
         }
         else
         {
-            view.displayAddArticle(doc);
+            view.displayAddArticle(doc, request.getHeader("REQUEST_URI"));
         }
         return doc;
     }

@@ -30,10 +30,10 @@ class HomeModel : Model
 
     private Persister!Article mArticles;
 
-    this()
+    void initialize()
     {
         mArticles = new Persister!Article;
-        // TODO This needs doing properly.
+        // TODO This needs doing properly (ie not on every request!).
         mArticles.initialize();
     }
 
