@@ -14,7 +14,10 @@ module example.views.HomeView;
 import example.models.HomeModel;
 
 import serenity.core.View;
+// TODO These need to be done in core.View
 import serenity.document.HtmlDocument;
+// TODO This needs to be in serenity.document
+import serenity.core.Form;
 
 class HomeView : View
 {
@@ -28,22 +31,10 @@ class HomeView : View
 
     void displayAddArticle(HtmlDocument doc, string url)
     {
-        // TODO This needs to be nicer...
-        //      One step at a time though.
-        //      Any sort of form handling should automaticaly add in the url
-        auto form = doc.form.attr("method", "post")
-                            // TODO Fix action URL
-                            .attr("action", url);
-        auto title = form.p;
-        form.label.attr("for", "title").content = "Title";
-        form.input.attr("id", "title")
-               .attr("name", "title")
-               .attr("type", "text");
-        auto content = form.p;
-        content.label.attr("for", "content").content = "Content";
-        content.textarea.attr("id", "content")
-                        .attr("name", "content");
-        form.p.input.attr("value", "Add post")
-                    .attr("type", "submit");
+        auto form = new Form;
+        form.text("Title", "title");
+        form.textArea("Content", "content");
+        form.submit(null, null, "Add article");
+        doc ~= form;
     }
 }

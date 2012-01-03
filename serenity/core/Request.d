@@ -49,6 +49,7 @@ class Request
         Options, Get, Head, Post,
         Put, Delete, Trace, Connect
     }
+    private static Request mInstance;
     private string[string] mArgs;
     private Method         mMethod   = Method.Get;
     private string[string] mPost;
@@ -130,6 +131,13 @@ class Request
             // This is wrong :3
             mArgs["PATH_INFO"] = cliArgs[1];
         }
+        // TODO This will break once we start handling multiple simultaneous requests using fibers
+        mInstance = this;
+    }
+
+    public static Request current() @property
+    {
+        return mInstance;
     }
 
     /**
@@ -138,7 +146,7 @@ class Request
      * Returns:
      *  A Request.Protocol representing the protocol used by the current request
      */
-    public Protocol protocol()
+    public Protocol protocol() @property
     {
         return mProtocol;
     }
@@ -149,7 +157,7 @@ class Request
      * Returns:
      *  A Request.Method representing the method used for the current request
      */
-    public Method method()
+    public Method method() @property
     {
         return mMethod;
     }
