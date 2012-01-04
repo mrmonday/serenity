@@ -43,6 +43,12 @@ string genInputMethods()
                         el.attr("id", name);
                     }
                     el.attr("name", name);
+                    `;
+                // Passwords should not be auto-filled
+                if (type != "password")
+                {
+                    ret ~=
+                    `
                     if (value is null)
                     {
                         if (auto ptr = name in Request.current.postData)
@@ -54,8 +60,13 @@ string genInputMethods()
                     {
                         el.attr("value", value);
                     }
+                    `;
                 }
-                `;
+                else
+                {
+                    ret ~= q{el.attr("value", value);};
+                }
+        ret ~= `}`;
     }
     return ret;
 }
