@@ -27,7 +27,7 @@ string genInputMethods()
     [ 
         "button", "checkbox", "color", "date", "datetime", "datetimeLocal",
         "email", "file", "hidden", "image", "month", "number", "password",
-        "radio", "range", "reset", "search", "submit", "tel", "text", "time",
+        "radio", "range", "reset", "search", "tel", "text", "time",
         "url", "week"
     ];
     string ret;
@@ -96,5 +96,14 @@ class Form : HtmlDocument
         }
         par.textarea.attr("id", name).attr("name", name).content = value;
     }
+
+    public void submit(string value)
+    {
+        auto par = mForm.p;
+        auto el = par.input.attr("type", "submit");
+
+        el.attr("value", value);
+    }
+
     mixin(genInputMethods());
 }

@@ -34,7 +34,7 @@ class HomeView : View
         auto form = new Form;
         form.text("Title", "title");
         form.textArea("Content", "content");
-        form.submit(null, null, "Add article");
+        form.submit("Add article");
         doc ~= form;
     }
 }
