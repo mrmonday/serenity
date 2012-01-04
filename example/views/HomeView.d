@@ -29,7 +29,7 @@ class HomeView : View
         a.p.content = article.content;
     }
 
-    void displayAddArticle(HtmlDocument doc, string url)
+    void displayAddArticle(HtmlDocument doc)
     {
         auto form = new Form;
         form.text("Title", "title");

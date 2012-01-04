@@ -44,7 +44,7 @@ class HomeController : Controller
         }
         else
         {
-            view.displayAddArticle(doc, request.getHeader("REQUEST_URI"));
+            view.displayAddArticle(doc);
         }
         return doc;
     }
