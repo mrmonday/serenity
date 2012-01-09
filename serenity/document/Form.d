@@ -1,13 +1,13 @@
 /**
  * Serenity Web Framework
  *
- * core/Form.d: A wrapper around Document for simple form creation
+ * document/Form.d: A wrapper around Document for simple form creation
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
  * Copyright: Copyright (c) 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
-module serenity.core.Form;
+module serenity.document.Form;
 
 import serenity.document.HtmlDocument;
 import serenity.core.Request;

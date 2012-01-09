@@ -16,8 +16,7 @@ import example.models.HomeModel;
 import serenity.core.View;
 // TODO These need to be done in core.View
 import serenity.document.HtmlDocument;
-// TODO This needs to be in serenity.document
-import serenity.core.Form;
+import serenity.document.Form;
 
 class HomeView : View
 {
