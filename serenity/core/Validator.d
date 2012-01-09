@@ -9,47 +9,100 @@
  */
 module serenity.core.Validator;
 
-import std.exception;
+import std.conv;
+
+class ValidationException : Exception
+{
+    this()
+    {
+        super("Validation error");
+    }
+}
 
 class Validator
 {
     struct Contract
     {
-        size_t minLength;
-        size_t maxLength = size_t.max;
-        void check(string value)
+        struct DgErrPair
         {
-            enforce(value.length > minLength);
-            enforce(value.length < maxLength);
+            bool delegate(string) dg;
+            string error;
+        }
+        DgErrPair[] validators;
+        void validate(bool delegate(string) dg, string error)
+        {
+            validators ~= DgErrPair(dg, error);
+        }
+
+        private string[] check(string value)
+        {
+            typeof(return) errors;
+            foreach (validator; validators)
+            {
+                if (!validator.dg(value))
+                {
+                    errors ~= validator.error;
+                }
+            }
+            return errors;
         }
     }
-    Contract[string] mRequired;
-    Contract[string] mOptional;
 
-    protected Contract require(string s)
+    private Contract*[string] mRequired;
+    private string[string] mRequiredErrors;
+    private Contract*[string] mOptional;
+    private string[] mErrors;
+
+    string[] errors() @property
     {
-        return mRequired[s] = Contract();
+        auto errs = mErrors;
+        mErrors = [];
+        return errs;
     }
 
-    protected Contract optional(string s)
+    protected Contract* require(string s, string error)
     {
-        return mOptional[s] = Contract();
+        mRequiredErrors[s] = error;
+        return mRequired[s] = new Contract();
+    }
+
+    protected Contract* optional(string s)
+    {
+        return mOptional[s] = new Contract();
     }
 
     protected T populate(T)(string[string] postData)
     {
         static assert(is(T == struct));
-        import std.conv;
         foreach(key, contract; mRequired)
         {
             auto value = key in postData;
-            enforce(value, key);
-            contract.check(*value);
+            if (value is null || value.length == 0)
+            {
+                mErrors ~= mRequiredErrors[key];
+            }
+            else
+            {
+                if (auto errors = contract.check(*value))
+                {
+                    mErrors ~= errors;
+                }
+            }
         }
         foreach(key, contract; mOptional)
         {
             if (auto value = key in postData)
-                contract.check(*value);
+            {
+                auto errors = contract.check(*value);
+                if (errors)
+                {
+                    mErrors ~= errors;
+                }
+            }
+        }
+        if (mErrors.length)
+        {
+            throw new ValidationException;
         }
         T t;
         foreach(i, member; t.tupleof)

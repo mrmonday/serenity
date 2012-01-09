@@ -37,4 +37,9 @@ class HomeView : View
         form.submit("Add article");
         doc ~= form;
     }
+
+    void displayError(HtmlDocument doc, string error)
+    {
+        doc.p.content = error;
+    }
 }

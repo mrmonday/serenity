@@ -42,10 +42,14 @@ class HomeModel : Model
         return mArticles;
     }
 
-    auto addArticle(string[string] p)
+    bool addArticle(string[string] p)
     {
+        scope(failure) return false;
+
         auto article = validator.validate(p);
         article.time = cast(DateTime)Clock.currTime().toUTC();
         mArticles ~= article;
+
+        return true;
     }
 }

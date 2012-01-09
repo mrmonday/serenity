@@ -52,6 +52,14 @@ abstract class Model
                 initialize();
             }
         }
+
+        static if(is(typeof(validator) : serenity.core.Validator.Validator))
+        {
+            string[] errors() @property
+            {
+                return validator.errors;
+            }
+        }
     }
 
 }

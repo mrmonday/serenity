@@ -17,10 +17,11 @@ class HomeValidator : Validator
 {
     auto validate(string[string] p)
     {
-        auto title = require("title");
+        auto title = require("title", "Title is a required field");
         auto content = optional("content");
 
-        title.maxLength = 255;
+        // TODO switch to pretty => lambda syntax when dmd 2.058 is released
+        title.validate((string str) { return str.length < 255; }, "Titles may be no longer than 255 characters");
 
         return populate!Article(p);
     }

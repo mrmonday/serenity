@@ -320,6 +320,13 @@ abstract class Controller
         mHeaders[name] = value;
     }
 
+    protected HtmlDocument redirect(string to, ushort status=303)
+    {
+        setResponseCode(status);
+        setHeader("Location", to);
+        return new HtmlDocument;
+    }
+
     /**
      * Select the relevant method in a controller to call
      *

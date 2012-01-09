@@ -35,17 +35,20 @@ class HomeController : Controller
 
         if (auto postData = request.postData)
         {
-            // TODO Error handling
-            model.addArticle(postData);
-            
-            // TODO Need a redirect method, and a url maker
-            setResponseCode(303);
-            setHeader("Location", "/");
+            if (model.addArticle(postData))
+            {
+                // TODO success message
+                return redirect("/");
+            }
         }
-        else
+        if (auto errors = model.errors)
         {
-            view.displayAddArticle(doc);
+            foreach (error; errors)
+            {
+                view.displayError(doc, error);
+            }
         }
+        view.displayAddArticle(doc);
         return doc;
     }
 }
