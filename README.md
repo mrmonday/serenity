@@ -4,11 +4,11 @@ A pre-alpha web framework designed for rapid development, lightning fast perform
 
 ## Build instructions
 
-Requires dmd 2.053 to build.
+Requires dmd 2.056 (does not build with 2.057, may work with 2.058) to build.
 
 On windows use:
 
-    dmd -w -O -inline -run build.d 
+    rdmd build.d 
 
 Otherwise:
 
