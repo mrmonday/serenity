@@ -42,8 +42,15 @@ struct Config
         }
     }
 
+    string* opIn_r(string key)
+    {
+        assert(current in values);
+        return key in values[current];
+    }
+
     string opIndex(string key)
     {
+        assert(current in values);
         return values[current][key];
     }
 
@@ -93,5 +100,10 @@ unittest
 `);
     file.close();
     Config c = Config(fn);
+
+    assert(c.serenity.persister.sqlite["file"] == "serenity-test.db");
+    assert("/" in c.serenity.router.routes);
+    assert(*("/" in c.serenity.router.routes) == "example/Home/Default");
+
     std.file.remove(fn);
 }
