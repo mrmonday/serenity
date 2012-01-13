@@ -4,7 +4,7 @@
  * core/Router.d: Route a request from a given path to the correct controller
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module serenity.core.Router;
@@ -12,6 +12,7 @@ module serenity.core.Router;
 import std.algorithm;
 import std.string;
 
+import serenity.core.Config;
 import serenity.core.Controller;
 import serenity.core.Util;
 
@@ -340,19 +341,15 @@ private final class Route
 
 static class Router
 {
+    // TODO Switch to a set once phobos has them.
     private static Route[] mRoutes;
     private static string mErrorPlugin;
     private static string mErrorController;
 
-    /**
-     * Add an associative array of routes to the router
-     *
-     * Params:
-     *  routes = An associative array of patterns to routes
-     */
-    public static void addRoutes(string[string] routes)
+
+    package static void initialize()
     {
-        foreach (pattern, route; routes)
+        foreach(pattern, route; config.serenity.router.routes)
         {
             addRoute(pattern, route);
         }

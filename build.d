@@ -25,6 +25,7 @@ enum serenity = [
                     "serenity/backend/FastCGI.d",
                     "serenity/bindings/FastCGI.d",
                     "serenity/bindings/Sqlite.d",
+                    "serenity/core/Config.d",
                     "serenity/core/Controller.d",
                     "serenity/core/Dispatcher.d",
                     "serenity/core/Log.d",

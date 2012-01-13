@@ -4,7 +4,7 @@
  * persister/Sqlite.d: Persist data to a SQLite database
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module serenity.persister.Sqlite;
@@ -13,17 +13,12 @@ import std.math : abs;
 import std.typecons : Tuple, tuple;
 import std.typetuple;
 
+import serenity.core.Config;
+
 import serenity.persister.backend.Sqlite;
 import serenity.persister.Persister;
 import serenity.persister.Query;
 
-/// Default database if none is provided
-private SqliteDatabase defaultDatabase;
-public void setDefaultDatabase(SqliteDatabase db)
-{
-    assert(db !is null);
-    defaultDatabase = db;
-}
 
 final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
 {
@@ -40,8 +35,15 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
         {
             parent = new typeof(parent)(db);
         }
-        mDb = db is null ? defaultDatabase : db;
-        assert(mDb !is null);
+        if (db is null)
+        {
+            mDb = new SqliteDatabase(config.serenity.persister.sqlite["file"]);
+            assert(mDb !is null);
+        }
+        else
+        {
+            mDb = db;
+        }
     }
 
     void initialize()

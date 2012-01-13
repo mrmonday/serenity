@@ -4,21 +4,23 @@
  * core/Serenity.d: Entry point for Serenity applications
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module serenity.core.Serenity;
 
 import serenity.backend.Backend;
+import serenity.core.Config;
 import serenity.core.Controller;
 import serenity.core.Dispatcher;
 import serenity.document.HtmlPrinter;
 import serenity.core.Request;
 
-public import serenity.core.Log;
-public import serenity.core.Router;
+import serenity.core.Log;
+import serenity.core.Router;
 
 import std.datetime;
+import std.getopt;
 import std.stream;
 
 version (EnableFastCGIBackend)
@@ -48,6 +50,37 @@ final class Serenity
         mBackend = backend;
     }
 
+    private static bool initArgs(ref string[] args)
+    {
+        // Must be saved as getopt eats arguments
+        string appName = args[0];
+        bool exit, configured;
+        void printHelp()
+        {
+            import std.stdio;
+            writefln("Serenity Web Framework v%s", "0.1 pre-alpha");
+            writefln("usage: %s [options]", appName);
+            writeln("");
+            writeln("Options:");
+            writeln("   --config=<file>                 use <file> to configure serenity");
+            writeln("   --help                          print this help message");
+            exit = true;
+        }
+        getopt(args, "c|config", (string arg)
+                                 {
+                                     serenity.core.Config.config = Config(arg);
+                                     configured = true;
+                                 },
+                     "h|help", &printHelp);
+        if (!configured)
+        {
+            // Ignore failure
+            scope(failure) return exit;
+            serenity.core.Config.config = Config("config.ini");
+        }
+        return exit;
+    }
+
     /**
      * Execute Serenity
      *
@@ -69,10 +102,14 @@ final class Serenity
      * Returns:
      *  Zero (0) on successful termination, non-zero on error 
      */
-    public static int exec(string[] args)
+    public static int exec(ref string[] args)
     {
         mDispatcher = new Dispatcher;
-        mArgs = args;
+        if (initArgs(args))
+        {
+            return 1;
+        }
+        Router.initialize();
         log = Log.getLogger("serenity.Serenity");
         if (mBackend is null)
         {
