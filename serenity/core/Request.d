@@ -76,15 +76,9 @@ class Request
                     char[] digits;
                     digits.length = 2;
                     // BUG Validate
-                    try
-                    {
-                        stdin.read(digits);
-                    }
-                    catch
-                    {
-                        throw new RequestException("Invalid POST arguments");
-                    }
-                    buffer ~= to!string(parse!int(digits, 16));
+                    stdin.read(digits[0]);
+                    stdin.read(digits[1]);
+                    buffer ~= cast(immutable(char))parse!int(digits, 16);
                     break;
                 case '=':
                     key = buffer;
