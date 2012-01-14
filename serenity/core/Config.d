@@ -15,6 +15,8 @@ import std.conv;
 import std.stdio;
 import std.string;
 
+// TODO This is all too dumb, config.foo.bar["baz"] should be the same
+//      as config["foo.bar.baz"] etc.
 struct Config
 {
     private string[string][string] values;
@@ -70,6 +72,14 @@ struct Config
     }
 
     Config opDispatch(string name)()
+    {
+        auto c = this;
+        c.current = current ? current ~ '.' ~ name : name;
+        return c;
+    }
+
+    // Used to mitigate the fact opDispatch can't deal with keywords
+    Config section(string name)
     {
         auto c = this;
         c.current = current ? current ~ '.' ~ name : name;

@@ -37,7 +37,7 @@ final class SqlitePersister(T) : IPersister!(T, SqliteDatabase)
         }
         if (db is null)
         {
-            mDb = new SqliteDatabase(config.serenity.persister.sqlite["file"]);
+            mDb = new SqliteDatabase(config.serenity.persister.sqlite.section("default")["file"]);
             assert(mDb !is null);
         }
         else
