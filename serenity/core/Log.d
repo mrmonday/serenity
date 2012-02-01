@@ -21,10 +21,6 @@ class Logger
     {
         mName = name;
     }
-    bool info(T=void)()
-    {
-        return true;
-    }
     void info(T...)(string msg, T args)
     {
         Log.mStream.writeLine(format("[info] [%s]: " ~ msg, mName, args));

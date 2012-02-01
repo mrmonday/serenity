@@ -226,7 +226,7 @@ abstract class Controller
      * ----
      *  void myMethod()
      *  {
-     *      if (log.info) log.info("myMethod()");
+     *      log.info("myMethod()");
      *  }
      * ----
      * Returns:
@@ -367,7 +367,7 @@ abstract class Controller
         {
             if (name == mViewMethod)
             {
-                if (log.info) log.info("Calling method HtmlDocument %s(Request, string[]) @ %#x", mViewMethod, ptr);
+                log.info("Calling method HtmlDocument %s(Request, string[]) @ %#x", mViewMethod, ptr);
                 Document delegate(Request, string[]) dg;
                 dg.ptr = cast(void*)this;
                 dg.funcptr = cast(typeof(dg.funcptr))ptr;

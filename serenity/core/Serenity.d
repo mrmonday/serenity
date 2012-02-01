@@ -134,7 +134,7 @@ final class Serenity
         try
         {
             Log.setStream(stderr);
-            if (log.info) log.info("Accepting new request");
+            log.info("Accepting new request");
             sw.start;
             
             /// Handle the request
@@ -143,7 +143,7 @@ final class Serenity
             response.send(stdout);
             
             sw.stop;
-            if (log.info) log.info("Request complete in %sµs", sw.peek.to!("usecs", ulong));
+            log.info("Request complete in %sµs", sw.peek.to!("usecs", ulong));
             return 0;
         }
         catch (Exception e)
