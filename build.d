@@ -60,6 +60,7 @@ enum persisters = [
 shared string buildOpts;
 shared string[] packages;
 shared bool verbose;
+shared string dmd = "/usr/bin/env dmd";
 
 string green(string str) @property
 {
@@ -116,8 +117,8 @@ class BuildFail : Exception
 void buildSerenity()
 {
     writeln("> Building lib/libserenity.a".green);
-    version(DMDBug7099Fixed) string build = "/usr/bin/env dmd -oflib/libserenity.a -lib ";
-    else string build = "/usr/bin/env dmd -oflib/libserenity.a -c ";
+    version(DMDBug7099Fixed) string build = dmd ~ " -oflib/libserenity.a -lib ";
+    else string build = dmd ~ " -oflib/libserenity.a -c ";
     foreach (file; serenity)
     {
         build ~= file ~ ' ';
@@ -131,8 +132,8 @@ void buildSerenity()
 void buildPackage(string p)
 {
     writefln("> Building package lib/libserenity-%s.a".green, p);
-    version(DMDBug7099Fixed) string build = "/usr/bin/env dmd -oflib/libserenity-" ~ p ~ ".a -lib ";
-    else string build = "/usr/bin/env dmd -oflib/libserenity-" ~ p ~ ".a -c ";
+    version(DMDBug7099Fixed) string build = dmd ~ " -oflib/libserenity-" ~ p ~ ".a -lib ";
+    else string build = dmd ~ " -oflib/libserenity-" ~ p ~ ".a -c ";
     foreach (file; filter!q{endsWith(a.name, ".d")}(dirEntries(p, SpanMode.depth)))
     {
         build ~= file.name ~ ' ';
@@ -171,7 +172,7 @@ void buildBinary()
     enforce(packages.length, "Cannot build a binary with no packages");
     genMvcImports();
     writeln("> Building binary bin/serenity.fcgi".green);
-    string build = "/usr/bin/env dmd -ofbin/serenity.fcgi bootstrap.d mvc.d -L-Llib ";
+    string build = dmd ~ " -ofbin/serenity.fcgi bootstrap.d mvc.d -L-Llib ";
     foreach (p; packages)
     {
         build ~= "-L-lserenity-" ~ p ~ " ";
@@ -189,6 +190,7 @@ int main(string[] args)
     bool clean, exit, release;
     string remote = null, remoteDir = null;
     getopt(args,
+            "dmd", (string, string s) { dmd = s; },
             "r|release", &release,
             "no-binary", { buildBin = false; },
             "no-parallel", { parallelBuild = false; },
@@ -214,6 +216,7 @@ int main(string[] args)
                         writeln("usage: ./build.d [options]");
                         writeln("");
                         writeln("Options:");
+                        writeln("   --dmd=<dmd>                     set the path to dmd/ldmd/gdmd to <dmd>");
                         writeln("   --release                       build in release mode");
                         writeln("   --no-binary                     do not build a binary");
                         writeln("   --enable-backend=<backend>      enable backend <backend>");
@@ -251,8 +254,8 @@ int main(string[] args)
             verbose && writefln(yellow("> scp -r . " ~ remote ~ ":" ~ tmp));
             benforce(system("scp -qCr . " ~ remote ~ ":" ~ tmp ) == 0, "Copying files to remote");
             // TODO Passthrough args
-            verbose && writefln(yellow("> ssh " ~ remote ~ " /usr/bin/env dmd -w -O -release -inline -run " ~ tmp ~ "/build.d"));
-            benforce(system("ssh " ~ remote ~ " /usr/bin/env dmd -w -O -release -inline -run " ~ tmp ~ "/build.d") == 0, "Building on remote");
+            verbose && writefln(yellow("> ssh " ~ remote ~ ' ' ~ dmd ~ " -w -O -release -inline -run " ~ tmp ~ "/build.d"));
+            benforce(system("ssh " ~ remote ~ ' ' ~ dmd ~ " -w -O -release -inline -run " ~ tmp ~ "/build.d") == 0, "Building on remote");
             verbose && writefln(yellow("> ssh " ~ remote ~ " 'cp -r " ~ tmp ~ " " ~ remoteDir ~ "'"));
             benforce(system("ssh " ~ remote ~ " 'cp -r " ~ tmp ~ "/* " ~ remoteDir ~ "'") == 0, "Installation");
             verbose && writefln(yellow("> ssh " ~ remote ~ " 'rm -rf " ~ tmp ~ "'"));
