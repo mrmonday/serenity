@@ -190,28 +190,28 @@ int main(string[] args)
     bool clean, exit, release;
     string remote = null, remoteDir = null;
     getopt(args,
-            "dmd", (string, string s) { dmd = s; },
+            "dmd", delegate(string o, string path) { dmd = path; },
             "r|release", &release,
-            "no-binary", { buildBin = false; },
-            "no-parallel", { parallelBuild = false; },
-            "enable-backend", (string, string backend)
+            "no-binary", delegate { buildBin = false; },
+            "no-parallel", delegate { parallelBuild = false; },
+            "enable-backend", delegate(string o, string backend)
                               {
                                     // TODO should probably be case insensitive
                                     enforce(backend in backends, "Invalid Backend");
                                     buildOpts ~= backends[backend];
                               },
-            "enable-persister", (string, string persister)
+            "enable-persister", delegate(string o, string persister)
                                 {
                                     enforce(persister in persisters, "Invalid Persister");
                                     buildOpts ~= persisters[persister];
                                 },
-            "p|build-package", (string, string p)
+            "p|build-package", delegate(string o, string p)
                              {
                                  packages ~= p;
                              },
             "remote", &remote,
             "remote-dir", &remoteDir,
-            "h|help", {
+            "h|help", delegate {
                         writeln("Serenity Web Framework Builder");
                         writeln("usage: ./build.d [options]");
                         writeln("");
@@ -230,8 +230,8 @@ int main(string[] args)
                         writeln("   --verbose                       print commands as they are run");
                         exit = true;
                     },
-            "c|clean", { clean = true; },
-            "v|verbose", { verbose = true; }
+            "c|clean", &clean,
+            "v|verbose", delegate { verbose = true; }
          );
     if (exit)
     {
@@ -332,7 +332,8 @@ int main(string[] args)
         {
             auto t = task!buildSerenity();
             taskPool.put(t);
-            foreach (p; parallel(packages))
+            // DMD Bug 7518
+            foreach (p; parallel(cast(string[])packages))
             {
                 buildPackage(p);
             }
