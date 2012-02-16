@@ -36,7 +36,7 @@ string ctToLower(string str) pure
  */
 mixin SerenityException!("ControllerNotFound", "404");
 
-private alias HtmlDocument function(Request, string[]) _scft;
+alias HtmlDocument function(Request, string[]) _scft;
 
 /**
  * Thrown when the specified Controller is not derived from Controller
