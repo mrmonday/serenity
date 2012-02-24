@@ -10,6 +10,7 @@
 module serenity.persister.Query;
 
 import std.array;
+import std.typetuple;
 
 enum QueryType
 {
@@ -49,6 +50,12 @@ template indexName(T) if (is(IndexType!T))
     }
 }
 
+template TablesOf(T)
+{
+    // TODO Implement this properly
+    alias TypeTuple!T TablesOf;
+}
+
 private enum HasBetween : bool
 {
     No = false,
@@ -76,15 +83,20 @@ final class Query(T)
     private HasBetween[string] mBetween;
     private bool mHasLimit;
 
-    Qt queryType() @property
+    Qt type() @property
     {
         return mQt;
     }
 
-    string[] wherePredicates() @property
+    string tablePrefix() @property
+    {
+        return mTablePrefix;
+    }
+
+    /*string[] wherePredicates() @property
     {
         return mWherePredicates;
-    }
+    }*/
 
     typeof(this) createTables(string prefix)
     in

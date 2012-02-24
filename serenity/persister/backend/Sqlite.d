@@ -15,6 +15,7 @@ import std.conv;
 import std.datetime;
 import std.exception;
 import std.string;
+import std.traits;
 
 import serenity.bindings.Sqlite;
 
@@ -23,6 +24,23 @@ import serenity.persister.Query;
 import serenity.core.Config;
 import serenity.core.Serenity;
 import serenity.core.Util;
+
+// Naive and inefficient replace() for use at compile time
+// TODO Remove this
+// TODO This doesn't work
+private string replace(string str, string[] replacements...)
+in
+{
+    assert(replacements.length % 2 == 0);
+}
+body
+{
+    for (size_t i = 0; i < replacements.length; i += 2)
+    {
+        str = std.array.replace(str, replacements[i], replacements[i+1]);
+    }
+    return str;
+}
 
 // TODO: Should be struct
 class Sqlite
@@ -37,8 +55,75 @@ class Sqlite
 
     static string buildQuery(T)(Query!T query)
     {
-        // TODO
-        return "";
+        string queryStr;
+        alias QueryType Qt;
+        final switch(query.type)
+        {
+            case Qt.Invalid:
+                // TODO
+                break;
+            case Qt.CreateTables:
+                // TODO possibly a good idea to allow user defined CREATE TABLE queries
+                //      to allow for better optimised tables.
+                foreach (table; TablesOf!T)
+                {
+                    string fields;
+                    foreach(i, field; typeof(table.tupleof))
+                    {
+                        enum fieldName = T.tupleof[i].stringof[T.stringof.length + 3 .. $];
+                        static if (is(field == bool) || isIntegral!(field))
+                        {
+                            fields ~= '`' ~ fieldName ~ "` INTEGER";
+                        }
+                        else static if (is(field == float) || is(field == double))
+                        {
+                            // TODO What about real?
+                            fields ~= '`' ~ fieldName ~ "` REAL";
+                        }
+                        else static if (is(field == string) || is(field == wstring) ||
+                                is(field == DateTime))
+                        {
+                            fields ~= '`' ~ fieldName ~ "` TEXT";
+                        }
+                        else static if (is(field == ubyte[]))
+                        {
+                            // TODO dstring should probably be handled like this too
+                            fields ~= '`' ~ fieldName ~ "` BLOB";
+                        }
+                        // TODO Handle foreign keys et al.
+                        /*else static if (isPointer!field && is(typeof(*field) == struct))
+                        {
+                            enum key = SqlitePersister!(typeof(*field)).primaryKey();
+                            static assert(key != null, "Referenced structs must have a field with a PRIMARY KEY constraint");
+                            str ~= "FOREIGN KEY(" ~ fieldName ~ ") REFERENCES serenity_" ~ typeof(*field).stringof ~ "(" ~ key ~ ")";
+                        }*/
+                        else
+                        {
+                            static assert(false, "Unsupported field type: " ~ fieldName);
+                        }
+                        static if (fieldName == indexName!table)
+                        {
+                            fields ~= " PRIMARY KEY";
+                        }
+                        if (i < typeof(table.tupleof).length - 1)
+                        {
+                            fields ~= ", ";
+                        }
+                    }
+                    queryStr ~= "CREATE TABLE `$prefix_$tableName` ($fields);".replace("$prefix", query.tablePrefix,
+                                                                                    "$tableName", table.stringof,
+                                                                                    "$fields", fields);
+                }
+                break;
+            // TODO
+            case Qt.Insert:
+                break;
+            case Qt.Select:
+                break;
+            case Qt.Update:
+                break;
+        }
+        return queryStr;
     }
 
     T[] execute(T)(string query)
