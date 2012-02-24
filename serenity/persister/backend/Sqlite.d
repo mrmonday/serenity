@@ -20,18 +20,41 @@ import serenity.bindings.Sqlite;
 
 import serenity.persister.Query;
 
+import serenity.core.Config;
 import serenity.core.Serenity;
 import serenity.core.Util;
 
 // TODO: Should be struct
-class SqliteDatabase
+class Sqlite
 {
     private sqlite3* mDb;
 
-    this(string dbName)
+    this(Config config = Config())
+    {
+        config = config == Config() ? .config.serenity.persister.sqlite.section("default") : config;
+        check(sqlite3_open(toStringz(config["file"]), &mDb));
+    }
+
+    static string buildQuery(T)(Query!T query)
+    {
+        // TODO
+        return "";
+    }
+
+    T[] execute(T)(string query)
+    {
+        assert(0);
+    }
+
+    T[] execute(T, Params...)(string query, Params params)
+    {
+        assert(0);
+    }
+
+    /*this(string dbName)
     {
         check(sqlite3_open(toStringz(dbName), &mDb));
-    }
+    }*/
 
     private void check(string file=__FILE__, size_t line=__LINE__)(int errCode)
     {
@@ -46,7 +69,7 @@ class SqliteDatabase
     {
         sqlite3_close(mDb);
     }
-
+/+
     /*override protected SqlPrinter getPrinter()
     {
         return new SqlitePrinter;
@@ -240,7 +263,10 @@ class SqliteDatabase
         }
         return result;
     }
+    +/
 }
+
+version(none): // Remove this
 
 unittest
 {

@@ -9,6 +9,8 @@
  */
 module serenity.persister.Sqlite;
 
+version(none):
+
 import std.math : abs;
 import std.typecons : Tuple, tuple;
 import std.typetuple;

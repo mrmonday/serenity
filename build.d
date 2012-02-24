@@ -45,7 +45,6 @@ enum serenity = [
                     "serenity/persister/backend/Sqlite.d",
                     "serenity/persister/Persister.d",
                     "serenity/persister/Query.d",
-                    "serenity/persister/Sqlite.d",
                     "serenity/SqlitePrinter.d"
                 ];
 
