@@ -36,6 +36,11 @@ class Sqlite
         check(sqlite3_open(toStringz(config["file"]), &mDb));
     }
 
+    template fieldName(T, size_t i)
+    {
+        enum fieldName = T.tupleof[i].stringof[T.stringof.length + 3 .. $];
+    }
+    
     static string buildQuery(T)(Query!T query)
     {
         string queryStr;
@@ -53,25 +58,24 @@ class Sqlite
                     string fields;
                     foreach(i, field; typeof(table.tupleof))
                     {
-                        enum fieldName = T.tupleof[i].stringof[T.stringof.length + 3 .. $];
                         static if (is(field == bool) || isIntegral!(field))
                         {
-                            fields ~= '`' ~ fieldName ~ "` INTEGER";
+                            fields ~= '`' ~ fieldName!(T, i) ~ "` INTEGER";
                         }
                         else static if (is(field == float) || is(field == double))
                         {
                             // TODO What about real?
-                            fields ~= '`' ~ fieldName ~ "` REAL";
+                            fields ~= '`' ~ fieldName!(T, i) ~ "` REAL";
                         }
                         else static if (is(field == string) || is(field == wstring) ||
                                 is(field == DateTime))
                         {
-                            fields ~= '`' ~ fieldName ~ "` TEXT";
+                            fields ~= '`' ~ fieldName!(T, i) ~ "` TEXT";
                         }
                         else static if (is(field == ubyte[]))
                         {
                             // TODO dstring should probably be handled like this too
-                            fields ~= '`' ~ fieldName ~ "` BLOB";
+                            fields ~= '`' ~ fieldName!(T, i) ~ "` BLOB";
                         }
                         // TODO Handle foreign keys et al.
                         /*else static if (isPointer!field && is(typeof(*field) == struct))
@@ -84,7 +88,7 @@ class Sqlite
                         {
                             static assert(false, "Unsupported field type: " ~ fieldName);
                         }
-                        static if (fieldName == indexName!table)
+                        static if (fieldName!(T, i) == indexName!table)
                         {
                             fields ~= " PRIMARY KEY";
                         }
