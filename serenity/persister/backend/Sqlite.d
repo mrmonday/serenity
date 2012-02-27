@@ -25,6 +25,33 @@ import serenity.core.Config;
 import serenity.core.Serenity;
 import serenity.core.Util;
 
+// Naive implementations that work at compile time, std.array.replace fails
+string replace(string str, string from, string to)
+{
+    for (size_t i = 0; i < str.length - from.length; i++)
+    {
+        if (str[i..i+from.length] == from)
+        {
+            str = str[0..i] ~ to ~ str[i+from.length..$];
+        }
+    }
+    return str;
+}
+
+string replace(string str, string[] replacements...)
+in
+{
+    assert(replacements.length % 2 == 0);
+}
+body
+{
+    for (size_t i = 0; i < replacements.length; i += 2)
+    {
+        str = str.replace(replacements[i], replacements[i+1]);
+    }
+    return str;
+}
+
 // TODO: Should be struct
 class Sqlite
 {
@@ -97,7 +124,9 @@ class Sqlite
                             fields ~= ", ";
                         }
                     }
-                    queryStr ~= "CREATE TABLE `" ~ query.tablePrefix ~ table.stringof ~ "` (" ~ fields ~ ");";
+                    queryStr ~= "CREATE TABLE `$prefix$tableName` ($fields);".replace("$prefix", query.tablePrefix,
+                                                                                      "$tableName", table.stringof,
+                                                                                      "$fields", fields);
                 }
                 break;
             case Qt.Insert:
@@ -128,9 +157,46 @@ class Sqlite
                 }
                 queryStr ~= ");";
                 break;
-            // TODO
             case Qt.Select:
+                queryStr ~= "SELECT ";
+                // TODO Possible optimisation: don't include fields which use = in a WHERE clause
+                foreach (i, field; typeof(T.tupleof))
+                {
+                    queryStr ~= '`' ~ fieldName!(T, i) ~ '`';
+                    if (i < typeof(T.tupleof).length - 1)
+                    {
+                        queryStr ~= ", ";
+                    }
+                }
+                queryStr ~= " FROM `" ~ query.tablePrefix ~ T.stringof ~ '`';
+                auto preds = query.wherePredicates;
+                auto betweens = query.between;
+                if (preds.length || betweens.length)
+                {
+                    queryStr ~= " WHERE ";
+                    foreach (i, pred; preds)
+                    {
+                        queryStr ~= pred.replace("$index", indexName!T)
+                                        .replace("[", "`")
+                                        .replace("]", "`");
+                        if (i < preds.length - 1 || betweens.length)
+                        {
+                            queryStr ~= " AND ";
+                        }
+                    }
+                    foreach (i, col; betweens)
+                    {
+                        queryStr ~= '`' ~ col ~ "` BETWEEN ?, ?";
+                        if (i < betweens.length - 1)
+                        {
+                            queryStr ~= " AND ";
+                        }
+                    }
+                }
+                // TODO ORDER BY, LIMIT
+                queryStr ~= ';';
                 break;
+            // TODO
             case Qt.Update:
                 break;
         }

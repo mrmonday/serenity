@@ -93,10 +93,22 @@ final class Query(T)
         return mTablePrefix;
     }
 
-    /*string[] wherePredicates() @property
+    string[] wherePredicates() @property
     {
         return mWherePredicates;
-    }*/
+    }
+
+    string[] between() @property
+    {
+        string[] keys;
+        foreach (key, value; mBetween)
+        {
+            keys ~= key;
+        }
+        return keys;
+        // DMD Bug #7602
+        //return mBetween.keys;
+    }
 
     typeof(this) createTables(string prefix)
     in
@@ -156,6 +168,7 @@ final class Query(T)
         return this;
     }
 
+    // NOTE column names should be [] delimited unless they use magic indicies
     typeof(this) where(string[] preds...)
     in
     {
