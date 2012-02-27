@@ -100,9 +100,35 @@ class Sqlite
                     queryStr ~= "CREATE TABLE `" ~ query.tablePrefix ~ table.stringof ~ "` (" ~ fields ~ ");";
                 }
                 break;
-            // TODO
             case Qt.Insert:
+                // TODO What about multiple tables?
+                queryStr ~= "INSERT INTO `" ~ query.tablePrefix ~ T.stringof ~ "` (";
+                foreach (i, field; typeof(T.tupleof))
+                {
+                    static if (fieldName!(T, i) != indexName!T)
+                    {
+                        queryStr ~= '`' ~ fieldName!(T, i) ~ '`';
+                        if (i < typeof(T.tupleof).length - 1)
+                        {
+                            queryStr ~= ", ";
+                        }
+                    }
+                }
+                queryStr ~= ") VALUES(";
+                foreach (i, field; typeof(T.tupleof))
+                {
+                    static if (fieldName!(T, i) != indexName!T)
+                    {
+                        queryStr ~= '?';
+                        if (i < typeof(T.tupleof).length - 1)
+                        {
+                            queryStr ~= ", ";
+                        }
+                    }
+                }
+                queryStr ~= ");";
                 break;
+            // TODO
             case Qt.Select:
                 break;
             case Qt.Update:
