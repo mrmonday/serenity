@@ -25,19 +25,7 @@ import serenity.core.Config;
 import serenity.core.Serenity;
 import serenity.core.Util;
 
-// Naive implementations that work at compile time, std.array.replace fails
-string replace(string str, string from, string to)
-{
-    for (size_t i = 0; i < str.length - from.length; i++)
-    {
-        if (str[i..i+from.length] == from)
-        {
-            str = str[0..i] ~ to ~ str[i+from.length..$];
-        }
-    }
-    return str;
-}
-
+// Naive implementation that works at compile time, std.array.replace fails
 string replace(string str, string[] replacements...)
 in
 {
@@ -45,9 +33,20 @@ in
 }
 body
 {
+    string singleReplace(string str, string from, string to)
+    {
+        for (size_t i = 0; i < str.length - from.length; i++)
+        {
+            if (str[i..i+from.length] == from)
+            {
+                str = str[0..i] ~ to ~ str[i+from.length..$];
+            }
+        }
+        return str;
+    }
     for (size_t i = 0; i < replacements.length; i += 2)
     {
-        str = str.replace(replacements[i], replacements[i+1]);
+        str = singleReplace(str, replacements[i], replacements[i+1]);
     }
     return str;
 }
@@ -177,9 +176,9 @@ class Sqlite
                     queryStr ~= " WHERE ";
                     foreach (i, pred; preds)
                     {
-                        queryStr ~= pred.replace("$index", indexName!T)
-                                        .replace("[", "`")
-                                        .replace("]", "`");
+                        queryStr ~= pred.replace("$index", '`' ~ indexName!T ~ '`',
+                                                 "[", "`",
+                                                 "]", "`");
                         if (i < preds.length - 1 || betweens.length)
                         {
                             queryStr ~= " AND ";
@@ -187,7 +186,7 @@ class Sqlite
                     }
                     foreach (i, col; betweens)
                     {
-                        queryStr ~= '`' ~ col ~ "` BETWEEN ?, ?";
+                        queryStr ~= '`' ~ col.replace("$index", '`' ~ indexName!T ~ '`') ~ "` BETWEEN ?, ?";
                         if (i < betweens.length - 1)
                         {
                             queryStr ~= " AND ";
@@ -208,8 +207,45 @@ class Sqlite
                 }
                 queryStr ~= ';';
                 break;
-            // TODO
             case Qt.Update:
+                queryStr ~= "UPDATE `" ~ query.tablePrefix ~ T.stringof ~ "` SET ";
+                foreach (i, field; typeof(T.tupleof))
+                {
+                    static if (fieldName!(T, i) != indexName!T)
+                    {
+                        queryStr ~= '`' ~ fieldName!(T, i) ~ "` = ?";
+                        if (i < typeof(T.tupleof).length - 1)
+                        {
+                            queryStr ~= ", ";
+                        }
+                    }
+                }
+                // TODO Maybe there should be a Query!T.isValid, UPDATE must have a WHERE
+                auto preds = query.wherePredicates;
+                auto betweens = query.between;
+                if (preds.length || betweens.length)
+                {
+                    queryStr ~= " WHERE ";
+                    foreach (i, pred; preds)
+                    {
+                        queryStr ~= pred.replace("$index", '`' ~ indexName!T ~ '`',
+                                                 "[", "`",
+                                                 "]", "`");
+                        if (i < preds.length - 1 || betweens.length)
+                        {
+                            queryStr ~= " AND ";
+                        }
+                    }
+                    foreach (i, col; betweens)
+                    {
+                        queryStr ~= '`' ~ col.replace("$index", '`' ~ indexName!T ~ '`') ~ "` BETWEEN ?, ?";
+                        if (i < betweens.length - 1)
+                        {
+                            queryStr ~= " AND ";
+                        }
+                    }
+                }
+                queryStr ~= ';';
                 break;
         }
         return queryStr;
