@@ -25,23 +25,6 @@ import serenity.core.Config;
 import serenity.core.Serenity;
 import serenity.core.Util;
 
-// Naive and inefficient replace() for use at compile time
-// TODO Remove this
-// TODO This doesn't work
-private string replace(string str, string[] replacements...)
-in
-{
-    assert(replacements.length % 2 == 0);
-}
-body
-{
-    for (size_t i = 0; i < replacements.length; i += 2)
-    {
-        str = std.array.replace(str, replacements[i], replacements[i+1]);
-    }
-    return str;
-}
-
 // TODO: Should be struct
 class Sqlite
 {
@@ -110,9 +93,7 @@ class Sqlite
                             fields ~= ", ";
                         }
                     }
-                    queryStr ~= "CREATE TABLE `$prefix_$tableName` ($fields);".replace("$prefix", query.tablePrefix,
-                                                                                    "$tableName", table.stringof,
-                                                                                    "$fields", fields);
+                    queryStr ~= "CREATE TABLE `" ~ query.tablePrefix ~ table.stringof ~ "` (" ~ fields ~ ");";
                 }
                 break;
             // TODO
