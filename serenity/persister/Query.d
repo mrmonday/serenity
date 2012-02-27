@@ -79,7 +79,7 @@ final class Query(T)
     private Qt mQt;
     private string mTablePrefix;
     private string[] mWherePredicates;
-    private Order mOrder;
+    private Order[string] mOrder;
     private HasBetween[string] mBetween;
     private bool mHasLimit;
 
@@ -88,17 +88,27 @@ final class Query(T)
         return mQt;
     }
 
-    string tablePrefix() @property
+    auto tablePrefix() @property
     {
         return mTablePrefix;
     }
 
-    string[] wherePredicates() @property
+    auto wherePredicates() @property
     {
         return mWherePredicates;
     }
 
-    string[] between() @property
+    auto ordering() @property
+    {
+        return mOrder;
+    }
+
+    bool hasLimit() @property
+    {
+        return mHasLimit;
+    }
+
+    auto between() @property
     {
         string[] keys;
         foreach (key, value; mBetween)
@@ -204,7 +214,18 @@ final class Query(T)
     }
     body
     {
-        mOrder = order;
+        mOrder[indexName!T] = order;
+        return this;
+    }
+
+    typeof(this) orderBy(string column, Order order)
+    in
+    {
+        assert(mQt == Qt.Select);
+    }
+    body
+    {
+        mOrder[column] = order;
         return this;
     }
 

@@ -159,6 +159,7 @@ class Sqlite
                 break;
             case Qt.Select:
                 queryStr ~= "SELECT ";
+                // TODO For the ?'s below it should be possible to give constants
                 // TODO Possible optimisation: don't include fields which use = in a WHERE clause
                 foreach (i, field; typeof(T.tupleof))
                 {
@@ -193,7 +194,18 @@ class Sqlite
                         }
                     }
                 }
-                // TODO ORDER BY, LIMIT
+                if (auto ordering = query.ordering)
+                {
+                    queryStr ~= " ORDER BY ";
+                    foreach (column, order; ordering)
+                    {
+                        queryStr ~= "`" ~ column ~ "` " ~ (order == Query!T.Order.Asc ? "ASC" : "DESC");
+                    }
+                }
+                if (query.hasLimit)
+                {
+                    queryStr ~= " LIMIT ?";
+                }
                 queryStr ~= ';';
                 break;
             // TODO
