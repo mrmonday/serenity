@@ -77,6 +77,7 @@ final class Query(T)
         Desc
     }
     private Qt mQt;
+    private string[] mColumns;
     private string mTablePrefix;
     private string[] mWherePredicates;
     private Order[string] mOrder;
@@ -101,6 +102,11 @@ final class Query(T)
     auto ordering() @property
     {
         return mOrder;
+    }
+
+    auto columns() @property
+    {
+        return mColumns;
     }
 
     bool hasLimit() @property
@@ -164,6 +170,18 @@ final class Query(T)
     body
     {
         mQt = Qt.Select;
+        return this;
+    }
+
+    typeof(this) select(string[] columns...)
+    in
+    {
+        assert(mQt == Qt.Invalid);
+    }
+    body
+    {
+        mQt = Qt.Select;
+        mColumns = columns;
         return this;
     }
 

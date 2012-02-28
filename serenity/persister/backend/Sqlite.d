@@ -16,6 +16,8 @@ import std.datetime;
 import std.exception;
 import std.string;
 import std.traits;
+import std.typecons;
+import std.typetuple;
 
 import serenity.bindings.Sqlite;
 
@@ -66,10 +68,82 @@ class Sqlite
     {
         enum fieldName = T.tupleof[i].stringof[T.stringof.length + 3 .. $];
     }
+
+    private struct SqliteQuery
+    {
+        string query;
+        string[] columns;
+    }
+
+   /* private template ExecImpl(T...)
+    {
+        static if (T.length == 1)
+        {
+            pragma(msg, T[0].stringof);
+            static if (T[0].stringof == indexName!T)
+            {
+                alias TypeTuple!() ExecImpl;
+            }
+            else
+            {
+                alias T ExecImpl;
+            }
+        }
+        else
+        {
+            alias TypeTuple!(ExecImpl!(T[0]), ExecImpl!(T[1..$])) ExecImpl;
+        }
+    }
+
+    template Executable(T)
+    {
+        alias ExecImpl!(typeof(T.tupleof)) Executable;
+    }*/
+
+    template Range(size_t a, size_t b)
+    {
+        static if (a == b) alias TypeTuple!() Range;
+        else alias TypeTuple!(a, Range!(a+1, b)) Range;
+    }
+
+    static size_t indexOf(T, string name)()
+    {
+        foreach (i; Range!(0, T.tupleof.length))
+        {
+            if (fieldName!(T, i) == name)
+                return i;
+        }
+        return -1;
+    }
+
+    template Remove(size_t i, T...)
+    {
+        alias TypeTuple!(T[0..i], T[i+1..$]) Remove;
+    }
+
+    auto executable(T)(T row)
+    {
+        Tuple!(Remove!(indexOf!(T, indexName!T)(), typeof(T.tupleof))) ret;
+        //pragma(msg, typeof(T.tupleof).stringof);
+        //pragma(msg, typeof(ret.field).stringof);
+        foreach (i, el; row.tupleof)
+        {
+            static if (fieldName!(T, i) != indexName!T)
+            {
+                //pragma(msg, i.stringof);
+                //pragma(msg, indexOf!(T, indexName!T)());
+                //pragma(msg, fieldName!(T, i));
+                enum idx = indexOf!(T, indexName!T)() >= i ? i : i - 1;
+                ret.field[idx] = el;
+            }
+        }
+        return ret;
+    }
     
-    static string buildQuery(T)(Query!T query)
+    static SqliteQuery buildQuery(T)(Query!T query)
     {
         string queryStr;
+        string[] columns;
         alias QueryType Qt;
         final switch(query.type)
         {
@@ -123,7 +197,7 @@ class Sqlite
                             fields ~= ", ";
                         }
                     }
-                    queryStr ~= "CREATE TABLE `$prefix$tableName` ($fields);".replace("$prefix", query.tablePrefix,
+                    queryStr ~= "CREATE TABLE IF NOT EXISTS `$prefix$tableName` ($fields);".replace("$prefix", query.tablePrefix,
                                                                                       "$tableName", table.stringof,
                                                                                       "$fields", fields);
                 }
@@ -160,12 +234,28 @@ class Sqlite
                 queryStr ~= "SELECT ";
                 // TODO For the ?'s below it should be possible to give constants
                 // TODO Possible optimisation: don't include fields which use = in a WHERE clause
-                foreach (i, field; typeof(T.tupleof))
+                if (auto cols = query.columns)
                 {
-                    queryStr ~= '`' ~ fieldName!(T, i) ~ '`';
-                    if (i < typeof(T.tupleof).length - 1)
+                    columns = cols;
+                    foreach (i, col; cols)
                     {
-                        queryStr ~= ", ";
+                        queryStr ~= '`' ~ col ~ '`';
+                        if (i < cols.length - 1)
+                        {
+                            queryStr ~= ", ";
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (i, field; typeof(T.tupleof))
+                    {
+                        queryStr ~= '`' ~ fieldName!(T, i) ~ '`';
+                        columns ~= fieldName!(T, i);
+                        if (i < typeof(T.tupleof).length - 1)
+                        {
+                            queryStr ~= ", ";
+                        }
                     }
                 }
                 queryStr ~= " FROM `" ~ query.tablePrefix ~ T.stringof ~ '`';
@@ -248,17 +338,147 @@ class Sqlite
                 queryStr ~= ';';
                 break;
         }
-        return queryStr;
+        return SqliteQuery(queryStr, columns);
     }
 
-    T[] execute(T)(string query)
+    /*T[] execute(T)(string query)
     {
+        import std.stdio;
+        writefln("query: %s", query);
         assert(0);
-    }
+    }*/
 
-    T[] execute(T, Params...)(string query, Params params)
+    T[] execute(T, Params...)(SqliteQuery query, Params params)
     {
-        assert(0);
+        import std.stdio;
+        writeln("query: ", query, "; params: ", params);
+        T[] result;
+        sqlite3_stmt* statement;
+        // TODO Deal with tail
+        char* tail;
+        // TODO Clean this up
+        enforce(query.query.length < int.max);
+        check(sqlite3_prepare_v2(mDb, query.query.ptr, cast(int)query.query.length, &statement, &tail));
+        scope (exit) check(sqlite3_finalize(statement));
+        static if (params.length > 0)
+        {
+            static assert(params.length < int.max);
+            foreach (int i, param; params)
+            {
+                static if(is(typeof(param) == bool) || is(typeof(param) == byte) ||
+                          is(typeof(param) == ubyte) || is(typeof(param) == short) ||
+                          is(typeof(param) == ushort) || is(typeof(param) == int) ||
+                          is(typeof(param) == uint))
+                {
+                    check(sqlite3_bind_int(statement, i + 1, param));
+                }
+                else static if(is(typeof(param) == long) || is(typeof(param) == ulong))
+                {
+                    check(sqlite3_bind_int64(statement, i + 1, param));
+                }
+                else static if(is(typeof(param) == float) || is(typeof(param) == double))
+                {
+                   check(sqlite3_bind_double(statement, i + 1, param));
+                }
+                else static if(is(typeof(param) == DateTime))
+                {
+                   string isoString = param.toISOExtString();
+                   check(sqlite3_bind_text(statement, i + 1, isoString.ptr, isoString.length, null));
+                }
+                else static if (is(typeof(param) == string))
+                {
+                   check(sqlite3_bind_text(statement, i + 1, param.ptr, param.length, null));
+                }
+                else static if (is(typeof(param) == wstring))
+                {
+                   check(sqlite3_bind_text16(statement, i + 1, param.ptr, param.length * 2, null));
+                }
+                else static if (is(typeof(param) == ubyte[]))
+                {
+                   assert(param.length < int.max);
+                   check(sqlite3_bind_blob(statement, i + 1, param.ptr, cast(int)param.length, null));
+                }
+                else
+                {
+                    static assert(false, "Unhandled field type: " ~ typeof(param).stringof);
+                }
+            }
+        }
+        while (true)
+        {
+            auto st = sqlite3_step(statement);
+            if (st == SQLITE_ROW)
+            {
+                T val;
+                int col = 0;
+                if (query.columns is null)
+                {
+                    query.columns = new string[T.tupleof.length];
+                    foreach (i, type; typeof(T.tupleof))
+                    {
+                        query.columns[i] = T.tupleof[i].stringof[T.stringof.length+3..$];
+                    }
+                }
+                foreach (i, type; typeof(T.tupleof))
+                {
+                    if (T.tupleof[i].stringof[T.stringof.length+3..$] == query.columns[col])
+                    {
+                        static if(is(type == bool) || is(type == byte) ||
+                                  is(type == ubyte) || is(type == short) ||
+                                  is(type == ushort) || is(type == int) ||
+                                  is(type == uint))
+                        {
+                            val.tupleof[i] = cast(type)sqlite3_column_int(statement, col);
+                        }
+                        else static if(is(type == long) || is(type == ulong))
+                        {
+                           val.tupleof[i] = cast(type)sqlite3_column_int64(statement, col);
+                        }
+                        else static if(is(type == float) || is(type == double))
+                        {
+                            val.tupleof[i] = cast(type)sqlite3_column_double(statement, col);
+                        }
+                        else static if(is(type == string))
+                        {
+                            // BUG? .dup
+                            val.tupleof[i] = to!string(sqlite3_column_text(statement, col));
+                        }
+                        else static if(is(type == wstring))
+                        {
+                            auto tmp = sqlite3_column_text16(statement, col); 
+                            val.tupleof[i] = tmp[0..strlen(cast(char*)tmp)*3].idup;
+                        }
+                        else static if(is(type == ubyte[]))
+                        {
+                            auto blob = sqlite3_column_blob(statement, i);
+                            val.tupleof[i] = cast(ubyte[])blob[0..sqlite3_column_bytes(statement, col)].dup;
+                        }
+                        else static if(is(type == DateTime))
+                        {
+                            auto time =  to!string(sqlite3_column_text(statement, col));
+                            val.tupleof[i] = DateTime.fromISOExtString(time);
+                        }
+                        else
+                        {
+                            static assert(false, "Unsupported field type: " ~ type.stringof);
+                        }
+                        col++;
+                    }
+
+                }
+                result ~= val;
+            }
+            else if(st == SQLITE_DONE)
+            {
+                break;
+            }
+            else
+            {
+                // BUG TODO Should be some other type of exception
+                throw new Exception("Sqlite error: " ~ to!string(sqlite3_errmsg(mDb)));
+            }
+        }
+        return result;
     }
 
     /*this(string dbName)

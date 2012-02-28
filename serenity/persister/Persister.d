@@ -111,7 +111,7 @@ class Persister(T, Backend = DefaultBackend) if (canPersist!T &&
             auto q = new Query!T;
             return q.insert(prefix);
         }());
-        mBackend.execute!T(query, row);
+        mBackend.execute!T(query, Backend.executable(row).field);
         return row;
     }
 
@@ -142,7 +142,7 @@ class Persister(T, Backend = DefaultBackend) if (canPersist!T &&
                 auto q = new Query!T;
                 return q.update(prefix).where("$index = ?");
             }());
-            mBackend.execute!T(query, row, idx);
+            mBackend.execute!T(query, Backend.executable(row).field, idx);
             return row;
         }
 
