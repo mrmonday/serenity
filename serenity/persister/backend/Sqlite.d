@@ -64,7 +64,21 @@ class Sqlite
         check(sqlite3_open(toStringz(config["file"]), &mDb));
     }
 
-    template fieldName(T, size_t i)
+    private alias TypeTuple!(bool, byte, ubyte, short, ushort, int, long, ulong,
+                             float, double, DateTime, string, wstring, ubyte[]) SupportedTypes;
+    template canPersist(T...)
+    {
+        static if (T.length == 1)
+        {
+            enum canPersist = staticIndexOf!(T[0], SupportedTypes) != -1;
+        }
+        else
+        {
+            enum canPersist = canPersist!(T[0]) && canPersist!(T[1..$]);
+        }
+    }
+
+    private template fieldName(T, size_t i)
     {
         enum fieldName = T.tupleof[i].stringof[T.stringof.length + 3 .. $];
     }
@@ -75,38 +89,13 @@ class Sqlite
         string[] columns;
     }
 
-   /* private template ExecImpl(T...)
-    {
-        static if (T.length == 1)
-        {
-            pragma(msg, T[0].stringof);
-            static if (T[0].stringof == indexName!T)
-            {
-                alias TypeTuple!() ExecImpl;
-            }
-            else
-            {
-                alias T ExecImpl;
-            }
-        }
-        else
-        {
-            alias TypeTuple!(ExecImpl!(T[0]), ExecImpl!(T[1..$])) ExecImpl;
-        }
-    }
-
-    template Executable(T)
-    {
-        alias ExecImpl!(typeof(T.tupleof)) Executable;
-    }*/
-
-    template Range(size_t a, size_t b)
+    private template Range(size_t a, size_t b)
     {
         static if (a == b) alias TypeTuple!() Range;
         else alias TypeTuple!(a, Range!(a+1, b)) Range;
     }
 
-    static size_t indexOf(T, string name)()
+    private static size_t indexOf(T, string name)()
     {
         foreach (i; Range!(0, T.tupleof.length))
         {
@@ -116,28 +105,35 @@ class Sqlite
         return -1;
     }
 
-    template Remove(size_t i, T...)
+    private template Remove(size_t i, T...)
     {
         alias TypeTuple!(T[0..i], T[i+1..$]) Remove;
     }
 
     static executable(T)(T row)
     {
-        Tuple!(Remove!(indexOf!(T, indexName!T)(), typeof(T.tupleof))) ret;
-        //pragma(msg, typeof(T.tupleof).stringof);
-        //pragma(msg, typeof(ret.field).stringof);
-        foreach (i, el; row.tupleof)
+        static if (is(IndexType!T))
         {
-            static if (fieldName!(T, i) != indexName!T)
+            Tuple!(Remove!(indexOf!(T, indexName!T)(), typeof(T.tupleof))) ret;
+            //pragma(msg, typeof(T.tupleof).stringof);
+            //pragma(msg, typeof(ret.field).stringof);
+            foreach (i, el; row.tupleof)
             {
-                //pragma(msg, i.stringof);
-                //pragma(msg, indexOf!(T, indexName!T)());
-                //pragma(msg, fieldName!(T, i));
-                enum idx = indexOf!(T, indexName!T)() >= i ? i : i - 1;
-                ret.field[idx] = el;
+                static if (fieldName!(T, i) != indexName!T)
+                {
+                    //pragma(msg, i.stringof);
+                    //pragma(msg, indexOf!(T, indexName!T)());
+                    //pragma(msg, fieldName!(T, i));
+                    enum idx = indexOf!(T, indexName!T)() >= i ? i : i - 1;
+                    ret.field[idx] = el;
+                }
             }
+            return ret;
         }
-        return ret;
+        else
+        {
+            return tuple(row.tupleof);
+        }
     }
     
     static SqliteQuery buildQuery(T)(Query!T query)
@@ -188,7 +184,7 @@ class Sqlite
                         {
                             static assert(false, "Unsupported field type: " ~ fieldName);
                         }
-                        static if (fieldName!(T, i) == indexName!table)
+                        static if (is(IndexType!T) && fieldName!(T, i) == indexName!table)
                         {
                             fields ~= " PRIMARY KEY";
                         }
@@ -207,7 +203,7 @@ class Sqlite
                 queryStr ~= "INSERT INTO `" ~ query.tablePrefix ~ T.stringof ~ "` (";
                 foreach (i, field; typeof(T.tupleof))
                 {
-                    static if (fieldName!(T, i) != indexName!T)
+                    static if (!is(IndexType!T) || fieldName!(T, i) != indexName!T)
                     {
                         queryStr ~= '`' ~ fieldName!(T, i) ~ '`';
                         if (i < typeof(T.tupleof).length - 1)
@@ -219,7 +215,7 @@ class Sqlite
                 queryStr ~= ") VALUES(";
                 foreach (i, field; typeof(T.tupleof))
                 {
-                    static if (fieldName!(T, i) != indexName!T)
+                    static if (!is(IndexType!T) || fieldName!(T, i) != indexName!T)
                     {
                         queryStr ~= '?';
                         if (i < typeof(T.tupleof).length - 1)
@@ -266,8 +262,9 @@ class Sqlite
                     queryStr ~= " WHERE ";
                     foreach (i, pred; preds)
                     {
-                        queryStr ~= pred.replace("$index", '`' ~ indexName!T ~ '`',
-                                                 "[", "`",
+                        static if (is(IndexType!T))
+                            pred = pred.replace("$index", '`' ~ indexName!T ~ '`');
+                        queryStr ~= pred.replace("[", "`",
                                                  "]", "`");
                         if (i < preds.length - 1 || betweens.length)
                         {
@@ -276,7 +273,9 @@ class Sqlite
                     }
                     foreach (i, col; betweens)
                     {
-                        queryStr ~= '`' ~ col.replace("$index", '`' ~ indexName!T ~ '`') ~ "` BETWEEN ?, ?";
+                        static if (is(IndexType!T))
+                            col = col.replace("$index", '`' ~ indexName!T ~ '`');
+                        queryStr ~= '`' ~ col ~ "` BETWEEN ?, ?";
                         if (i < betweens.length - 1)
                         {
                             queryStr ~= " AND ";
@@ -301,7 +300,7 @@ class Sqlite
                 queryStr ~= "UPDATE `" ~ query.tablePrefix ~ T.stringof ~ "` SET ";
                 foreach (i, field; typeof(T.tupleof))
                 {
-                    static if (fieldName!(T, i) != indexName!T)
+                    static if (!is(IndexType!T) || fieldName!(T, i) != indexName!T)
                     {
                         queryStr ~= '`' ~ fieldName!(T, i) ~ "` = ?";
                         if (i < typeof(T.tupleof).length - 1)
@@ -318,8 +317,9 @@ class Sqlite
                     queryStr ~= " WHERE ";
                     foreach (i, pred; preds)
                     {
-                        queryStr ~= pred.replace("$index", '`' ~ indexName!T ~ '`',
-                                                 "[", "`",
+                        static if (is(IndexType!T))
+                            pred = pred.replace("$index", '`' ~ indexName!T ~ '`');
+                        queryStr ~= pred.replace("[", "`",
                                                  "]", "`");
                         if (i < preds.length - 1 || betweens.length)
                         {
@@ -328,7 +328,9 @@ class Sqlite
                     }
                     foreach (i, col; betweens)
                     {
-                        queryStr ~= '`' ~ col.replace("$index", '`' ~ indexName!T ~ '`') ~ "` BETWEEN ?, ?";
+                        static if (is(IndexType!T))
+                            col = col.replace("$index", '`' ~ indexName!T ~ '`');
+                        queryStr ~= '`' ~ col ~ "` BETWEEN ?, ?";
                         if (i < betweens.length - 1)
                         {
                             queryStr ~= " AND ";

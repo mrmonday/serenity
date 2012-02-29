@@ -225,15 +225,18 @@ final class Query(T)
         return this;
     }
 
-    typeof(this) order(Order order)
-    in
+    static if (is(IndexType!T))
     {
-        assert(mQt == Qt.Select);
-    }
-    body
-    {
-        mOrder[indexName!T] = order;
-        return this;
+        typeof(this) order(Order order)
+        in
+        {
+            assert(mQt == Qt.Select);
+        }
+        body
+        {
+            mOrder[indexName!T] = order;
+            return this;
+        }
     }
 
     typeof(this) orderBy(string column, Order order)
