@@ -121,7 +121,7 @@ class Sqlite
         alias TypeTuple!(T[0..i], T[i+1..$]) Remove;
     }
 
-    auto executable(T)(T row)
+    static executable(T)(T row)
     {
         Tuple!(Remove!(indexOf!(T, indexName!T)(), typeof(T.tupleof))) ret;
         //pragma(msg, typeof(T.tupleof).stringof);

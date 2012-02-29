@@ -176,12 +176,12 @@ class Persister(T, Backend = DefaultBackend) if (canPersist!T &&
             }());
             if (a.value == 0)
             {
-                return mBackend.execute!T(queryEndToB, b);
+                return mBackend.execute!T(queryEndToB, b.value);
             }
             if (b.value == 0)
             {
                 // TODO Maybe we should switch to ranges for slicing?
-                return array(retro(mBackend.execute!T(queryEndToB, a)));
+                return array(retro(mBackend.execute!T(queryEndToB, a.value)));
             }
             assert(false, "persister[$-a..$-b] is not currently implemented");
         }
