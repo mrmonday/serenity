@@ -11,6 +11,8 @@ module serenity.persister.backend.Sqlite;
 
 import core.stdc.string : strlen;
 
+import etc.c.sqlite3;
+
 import std.conv;
 import std.datetime;
 import std.exception;
@@ -18,8 +20,6 @@ import std.string;
 import std.traits;
 import std.typecons;
 import std.typetuple;
-
-import serenity.bindings.Sqlite;
 
 import serenity.persister.Query;
 
