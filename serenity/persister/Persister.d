@@ -23,6 +23,11 @@ version (EnableSqlitePersister)
     import serenity.persister.backend.Sqlite;
 }
 
+version (EnableJsonPersister)
+{
+    import serenity.persister.backend.Json;
+}
+
 string getBackends()
 {
     if (__ctfe)
@@ -31,6 +36,10 @@ string getBackends()
         version (EnableSqlitePersister)
         {
             backends ~= "Sqlite";
+        }
+        version (EnableJsonPersister)
+        {
+            backends ~= "Json";
         }
         assert(backends.length, "No Persister backend enabled");
         string ret = backends[0];

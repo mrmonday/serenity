@@ -41,6 +41,7 @@ enum serenity = [
                     "serenity/document/Html5Printer.d",
                     "serenity/document/HtmlDocument.d",
                     "serenity/document/HtmlPrinter.d",
+                    "serenity/persister/backend/Json.d",
                     "serenity/persister/backend/Sqlite.d",
                     "serenity/persister/Persister.d",
                     "serenity/persister/Query.d"
@@ -48,10 +49,11 @@ enum serenity = [
 
 enum backends = [
                     "FastCGI" : "-L-lfcgi -version=EnableFastCGIBackend "
-                ];
+                 ];
 
 enum persisters = [
-                    "SQLite" : "-L-lsqlite3 -version=EnableSqlitePersister "
+                    "SQLite" : "-L-lsqlite3 -version=EnableSqlitePersister ",
+                    "JSON" : "-version=EnableJsonPersister "
                   ];
 
 shared string buildOpts;
@@ -305,12 +307,12 @@ int main(string[] args)
     {
         if (release)
         {
-            buildOpts ~= "-wi -O -release -inline " ~ backends["FastCGI"] ~ persisters["SQLite"];
+            buildOpts ~= "-wi -O -release -inline " ~ backends["FastCGI"] ~ persisters["SQLite"] ~ persisters["JSON"];
         }
         else
         {
             // TODO Should use -w too, disabled until new std.stream is in place
-            buildOpts = "-d -wi -gc -debug -unittest " ~ backends["FastCGI"] ~ persisters["SQLite"];
+            buildOpts = "-d -wi -gc -debug -unittest " ~ backends["FastCGI"] ~ persisters["SQLite"] ~ persisters["JSON"];
         }
     }
     else if (release)
