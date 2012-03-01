@@ -82,7 +82,7 @@ template isPersisterBackend(T...)
 /// Tuple of all enabled backends
 mixin(q{private alias TypeTuple!(} ~ getBackends() ~ q{) PersisterBackends;});
 static assert(isPersisterBackend!(PersisterBackends), "One or more of the enabled persistance backends "
-                                                      "does not meet the required functionality of a persiser.");
+                                                      "does not meet the required functionality of a persister.");
 
 /// The default backend
 // TODO This should be configurable with the build script
