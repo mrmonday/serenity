@@ -51,8 +51,7 @@ body
     return str;
 }
 
-// TODO: Should be struct
-class Sqlite
+final class Sqlite
 {
     private sqlite3* mDb;
 
@@ -85,6 +84,7 @@ class Sqlite
         enum fieldName = T.tupleof[i].stringof[T.stringof.length + 3 .. $];
     }
 
+    // TODO This offers no way for the user to use custom SQL
     private struct SqliteQuery
     {
         string query;
@@ -146,8 +146,7 @@ class Sqlite
         final switch(query.type)
         {
             case Qt.Invalid:
-                // TODO
-                break;
+                throw new Exception("Invalid query");
             case Qt.CreateTables:
                 // TODO possibly a good idea to allow user defined CREATE TABLE queries
                 //      to allow for better optimised tables.
