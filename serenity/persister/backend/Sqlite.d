@@ -21,11 +21,9 @@ import std.traits;
 import std.typecons;
 import std.typetuple;
 
-import serenity.persister.Query;
-
 import serenity.core.Config;
-import serenity.core.Serenity;
-import serenity.core.Util;
+
+import serenity.persister.Query;
 
 // Naive implementation that works at compile time, std.array.replace fails
 string replace(string str, string[] replacements...)
@@ -347,17 +345,10 @@ class Sqlite
         return SqliteQuery(queryStr, columns);
     }
 
-    /*T[] execute(T)(string query)
-    {
-        import std.stdio;
-        writefln("query: %s", query);
-        assert(0);
-    }*/
-
     T[] execute(T, Params...)(SqliteQuery query, Params params)
     {
-        import std.stdio;
-        writeln("query: ", query, "; params: ", params);
+        debug import std.stdio;
+        debug writeln("query: ", query, "; params: ", params);
         T[] result;
         sqlite3_stmt* statement;
         // TODO Deal with tail
@@ -486,11 +477,6 @@ class Sqlite
         }
         return result;
     }
-
-    /*this(string dbName)
-    {
-        check(sqlite3_open(toStringz(dbName), &mDb));
-    }*/
 
     private void check(string file=__FILE__, size_t line=__LINE__)(int errCode)
     {

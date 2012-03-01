@@ -9,7 +9,6 @@
  */
 module serenity.persister.Query;
 
-import std.array;
 import std.typetuple;
 
 enum QueryType
