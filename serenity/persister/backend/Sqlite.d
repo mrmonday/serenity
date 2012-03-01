@@ -4,7 +4,7 @@
  * persister/backend/Sqlite.d: Sqlite database interface
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module serenity.persister.backend.Sqlite;
@@ -58,10 +58,14 @@ class Sqlite
 {
     private sqlite3* mDb;
 
-    this(Config config = Config())
+    this(Config config)
     {
-        config = config == Config() ? .config.serenity.persister.sqlite.section("default") : config;
         check(sqlite3_open(toStringz(config["file"]), &mDb));
+    }
+
+    this()
+    {
+        this(.config.serenity.persister.sqlite.section("default"));
     }
 
     private alias TypeTuple!(bool, byte, ubyte, short, ushort, int, long, ulong,

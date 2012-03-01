@@ -63,8 +63,9 @@ template isPersisterBackend(T...)
             Test t;
             Indexable i;
 
-            // Can be constructed with configuration values
-            Backend b = new Backend(config);
+            // Can be constructed with and without configuration values
+            Backend b = new Backend;
+            b = new Backend(config);
 
             // Can build and execute queries, both indexable and non-indexable
             // They should also be able to expand a struct into a tuple of basic types
@@ -100,7 +101,12 @@ class Persister(T, Backend = DefaultBackend) if (staticIndexOf!(Backend, Persist
         return mBackend;
     }
 
-    this(Config config = Config())
+    this()
+    {
+        mBackend = new Backend;
+    }
+
+    this(Config config)
     {
         mBackend = new Backend(config);
     }
