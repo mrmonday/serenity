@@ -44,8 +44,7 @@ enum serenity = [
                     "serenity/document/HtmlPrinter.d",
                     "serenity/persister/backend/Sqlite.d",
                     "serenity/persister/Persister.d",
-                    "serenity/persister/Query.d",
-                    "serenity/SqlitePrinter.d"
+                    "serenity/persister/Query.d"
                 ];
 
 enum backends = [
