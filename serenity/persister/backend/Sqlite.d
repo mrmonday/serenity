@@ -138,7 +138,7 @@ final class Sqlite
         }
     }
     
-    static SqliteQuery buildQuery(T)(Query!T query)
+    static buildQuery(T)(Query!T query)
     {
         string queryStr;
         string[] columns;
