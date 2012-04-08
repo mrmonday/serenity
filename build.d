@@ -157,7 +157,7 @@ void genMvcImports()
         {
             foreach (f; filter!q{endsWith(a.name, ".d")}(dirEntries(p ~ "/" ~ type ~ "/", SpanMode.shallow)))
             {
-                file.writefln("import %s." ~ type ~ ".%s;", p, basename(f.name, ".d"));
+                file.writefln("import %s." ~ type ~ ".%s;", p, baseName(f.name, ".d"));
             }
         }
         file.writeln();
@@ -235,7 +235,7 @@ int main(string[] args)
         return 0;
     }
 
-    chdir(dirname(__FILE__));
+    chdir(dirName(__FILE__));
 
     if (remote)
     {
