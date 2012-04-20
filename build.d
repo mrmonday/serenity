@@ -33,7 +33,6 @@ enum serenity = [
                     "serenity/core/Response.d",
                     "serenity/core/Router.d",
                     "serenity/core/Serenity.d",
-                    "serenity/core/Util.d",
                     "serenity/core/Validator.d",
                     "serenity/core/View.d",
                     "serenity/document/Document.d",
@@ -44,7 +43,9 @@ enum serenity = [
                     "serenity/persister/backend/Json.d",
                     "serenity/persister/backend/Sqlite.d",
                     "serenity/persister/Persister.d",
-                    "serenity/persister/Query.d"
+                    "serenity/persister/Query.d",
+                    "serenity/util/Misc.d",
+                    "serenity/util/Transfer.d"
                 ];
 
 enum backends = [
