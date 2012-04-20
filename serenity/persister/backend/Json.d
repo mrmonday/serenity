@@ -13,6 +13,8 @@ import serenity.core.Config;
 
 import serenity.persister.Query;
 
+import serenity.util.Transfer;
+
 import std.file;
 import std.json;
 import std.path;
@@ -55,7 +57,7 @@ final class Json
 
     static buildQuery(T)(Query!T query)
     {
-        return query;
+        return prepare(query);
     }
 
     // TODO This is duplicated all over the place and should be factored out
@@ -64,8 +66,9 @@ final class Json
         enum fieldName = T.tupleof[i].stringof[T.stringof.length + 3 .. $];
     }
 
-    T[] execute(T, Params...)(Query!T query, Params params)
+    T[] execute(T, Params...)(typeof(prepare(new Query!T)) _query, Params params)
     {
+        immutable query = transfer!(Query!T)(_query);
         immutable file = directory ~ dirSeparator ~ T.stringof ~ ".json";
         final switch(query.type)
         {
