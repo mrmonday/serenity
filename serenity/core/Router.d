@@ -14,7 +14,7 @@ import std.string;
 
 import serenity.core.Config;
 import serenity.core.Controller;
-import serenity.core.Util;
+import serenity.util.Misc;
 
 mixin SerenityException!("Router");
 

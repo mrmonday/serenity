@@ -9,8 +9,7 @@
  */
 module serenity.core.Request;
 
-//import serenity.core.Form;
-import serenity.core.Util;
+import serenity.util.Misc;
 
 import std.conv;
 import std.stream;

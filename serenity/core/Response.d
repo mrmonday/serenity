@@ -4,7 +4,7 @@
  * core/Response.d: Represents a response to a request
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module serenity.core.Response;
@@ -12,7 +12,7 @@ module serenity.core.Response;
 import serenity.document.HtmlDocument;
 import serenity.document.HtmlPrinter;
 import serenity.core.Request;
-import serenity.core.Util;
+import serenity.util.Misc;
 
 import std.stream;
 import std.string;

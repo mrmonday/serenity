@@ -4,7 +4,7 @@
  * core/Dispatcher.d: Dispatch a request
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module serenity.core.Dispatcher;
@@ -12,7 +12,7 @@ module serenity.core.Dispatcher;
 import serenity.core.Request;
 import serenity.core.Response;
 import serenity.core.Router;
-import serenity.core.Util;
+import serenity.util.Misc;
 
 class Dispatcher
 {

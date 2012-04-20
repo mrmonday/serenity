@@ -4,14 +4,14 @@
  * document/HtmlDocument.d: Represents an HTML document
  *
  * Authors: Robert Clipsham <robert@octarineparrot.com>
- * Copyright: Copyright (c) 2010, 2011, Robert Clipsham <robert@octarineparrot.com> 
+ * Copyright: Copyright (c) 2010, 2011, 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
 module serenity.document.HtmlDocument;
 
 public import serenity.document.Document;
 
-import serenity.core.Util;
+import serenity.util.Misc;
 
 import std.array : split;
 import std.algorithm;

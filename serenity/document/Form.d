@@ -11,7 +11,7 @@ module serenity.document.Form;
 
 import serenity.document.HtmlDocument;
 import serenity.core.Request;
-import serenity.core.Util;
+import serenity.util.Misc;
 
 import std.string;
 

@@ -10,7 +10,7 @@
 module serenity.core.Controller;
 
 import serenity.core.Log;
-import serenity.core.Util;
+import serenity.util.Misc;
 
 public import serenity.document.HtmlDocument;
 public import serenity.core.Request;
