@@ -13,7 +13,11 @@ import serenity.core.Config;
 
 import serenity.persister.Query;
 
+import std.file;
 import std.json;
+import std.path;
+import std.stdio;
+import std.traits;
 
 /**
  * JSON files are stored in directory/T.stringof.json in the form:
@@ -79,8 +83,8 @@ final class Json
                 return null;
             case QueryType.Insert:
                 // TODO Not inserting all columns
-                auto json = parseJson(cast(string)read(file));
-                assert(T.tupleof.length == params.length);
+                auto json = parseJSON(cast(string)read(file));
+                //assert(T.tupleof.length == params.length);
                 assert(json.array[0].array.length == params.length);
                 JSONValue row;
                 row.type = JSON_TYPE.ARRAY;
@@ -121,7 +125,7 @@ final class Json
                 File(file, "wb").rawWrite(toJSON(&json));
                 return null;
             case QueryType.Select:
-                JsonValue json = parseJson(cast(string)read(file));
+                JSONValue json = parseJSON(cast(string)read(file));
                 break;
             case QueryType.Update:
                 break;
