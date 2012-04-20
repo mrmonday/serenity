@@ -7,6 +7,8 @@
  * Copyright: Copyright (c) 2012, Robert Clipsham <robert@octarineparrot.com> 
  * License: New BSD License, see COPYING
  */
+module serenity.util.Transfer;
+
 import std.traits;
 import std.typecons;
 import std.typetuple;
